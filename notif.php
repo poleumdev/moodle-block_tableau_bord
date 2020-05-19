@@ -1,80 +1,100 @@
 <?php
-//Renvoie les notifs des cours pour un type d'activite sous la forme clé - valeur : id_course_module - code_html_module
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Renvoie les notifs des cours pour un type d'activite sous la forme
+ * clé - valeur : id_course_module - code_html_module.
+ */
 function creer_notif($courses, &$notification, $mod) {
     global $USER, $CFG, $DB;
     if ($mod == "assign") {
         if (empty($courses) || !is_array($courses) || count($courses) == 0) {
             return array();
         }
-        // Renvoie tous les devoirs (que les visibles pour un etudiant)
+        // Renvoie tous les devoirs (que les visibles pour un etudiant).
         if (!$assignments = get_all_instances_in_courses('assign', $courses)) {
             return;
         }
         $assignmentids = array();
         $assignmentdate = array();
-        // Boucle pour recuperer les id des devoirs qui necessitent une notification
+        // Boucle pour recuperer les id des devoirs qui necessitent une notification.
         foreach ($assignments as $key => $assignment) {
-            // Ajoute le devoir a la table qui contient les informations concernant la suppression des notifications
+            // Ajoute le devoir a la table qui contient les informations concernant la suppression des notifications.
             $ajout = new stdClass();
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $assignment->coursemodule;
             $ajout->time_delete = '0';
 
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );      
-            $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
-            // On ajoute ce devoir a la table s'il n'y est pas encore present
-            if($notif == false){
-                //On l'ajoute a la table
+            $parametre_notif = array('id_user' => $USER->id, 'id_course_module' => $assignment->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $parametre_notif);
+            // On ajoute ce devoir a la table s'il n'y est pas encore present.
+            if ($notif == false) {
+                // On l'ajoute a la table.
                 $DB->insert_record('tdb_delete_notifications',$ajout);
             }
 
             $time = time();
             $est_ouvert = false;
             $date_limite = false;
-            // S'il y a une date "a remettre jusqu'au" et/ou une date limite de rendu 
+            // S'il y a une date "a remettre jusqu'au" et/ou une date limite de rendu.
             if ($assignment->duedate || $assignment->cutoffdate) {
                 $cutoffdate = false;
                 $duedate = false;
                 if ($assignment->cutoffdate) {
                     $cutoffdate = $assignment->cutoffdate;
-                }           
+                }
                 if ($assignment->duedate) {
                     $duedate = $assignment->duedate;
                 }
 
-                // Parametre de recherche : l'id du devoir dans la table course_modules
+                // Parametre de recherche : l'id du devoir dans la table course_modules.
                 $parametre_devoir = array('id' => $assignment->coursemodule);
-                // On recupere l'enregistrement du devoir dans la table course_modules 
+                // On recupere l'enregistrement du devoir dans la table course_modules.
                 if(($devoir_info = $DB->get_records('course_modules',$parametre_devoir)) == true){
-                    // visibilite (1 si visible, 0 si cache)
+                    // visibilite (1 si visible, 0 si cache).
                     $visibilite = $devoir_info[$assignment->coursemodule]->visible;
                 }
 
                 if ($visibilite) {
-                    // S'il y a une date "a remettre jusqu'au"
+                    // S'il y a une date "a remettre jusqu'au".
                     if ($duedate) {
-                        $est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate /*&& $debut_restriction <= $time*/);
-                        $date_limite = intval($assignment->duedate); // timestamp en secondes
-                    } else if ($cutoffdate) { // Sinon s'il y a une date limite
+                        $est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate);
+                        $date_limite = intval($assignment->duedate); // Timestamp en secondes.
+                    } else if ($cutoffdate) { // Sinon s'il y a une date limite.
                         $est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $cutoffdate);
-                        $date_limite = intval($assignment->cutoffdate); // timestamp en secondes
+                        $date_limite = intval($assignment->cutoffdate); // Timestamp en secondes.
                     }
                 }
             }
-            // Si les conditions d'affichage de la notifications sont respectees alors on ajoute le devoir aux tableaux
+            // Si les conditions d'affichage de la notifications sont respectees alors on ajoute le devoir aux tableaux.
             if($est_ouvert) {
-                $assignmentids[] = $assignment->id; // Tableau contenant les id des devoirs
+                $assignmentids[] = $assignment->id; // Tableau contenant les id des devoirs.
                 $assignmentdate[$assignment->id] = $date_limite; // Tableau contenant la date limite d'affichage pour chaque devoir
             }
         }
 
-        // Si aucun devoir ne necessite de notification alors c'est termine
+        // Si aucun devoir ne necessite de notification alors c'est termine.
         if (empty($assignmentids)) {
             return true;
         }
-        
-        require_once($CFG->dirroot . '/mod/assign/locallib.php');        
-        // Recuperation de toutes les chaines de caracteres utiles a afficher
+
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+        // Recuperation de toutes les chaines de caracteres utiles a afficher.
         $strduedate = get_string('duedate', 'block_tableau_bord');
         $strcutoffdate = get_string('nosubmissionsacceptedafter', 'block_tableau_bord');
         $strnolatesubmissions = get_string('nolatesubmissions', 'block_tableau_bord');
@@ -92,33 +112,31 @@ function creer_notif($courses, &$notification, $mod) {
         $unmarkedsubmissions = null;
 
         foreach ($assignments as $assignment) {
-            
-            // Si ce devoir ne necessite pas de notification on passe au suivant
+
+            // Si ce devoir ne necessite pas de notification on passe au suivant.
             if (!in_array($assignment->id, $assignmentids)) {
                 continue;
             }
-            
-            // Recuperation des informations du devoir dans la table 'delete_notif'
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );      
+
+            // Recuperation des informations du devoir dans la table 'delete_notif'.
+            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );
             $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
-            
-            
+
             $dimmedclass = '';
             if (!$assignment->visible) {
                 $dimmedclass = ' class="dimmed"';
             }
-            
-            // Lien vers le devoir
+
+            // Lien vers le devoir.
             $href = $CFG->wwwroot . '/mod/assign/view.php?id=' . $assignment->coursemodule;
-                        
-            $str=""; // Contient le code html de la notification
-            
+
+            $str=""; // Contient le code html de la notification.
+
             $context = context_module::instance($assignment->coursemodule);
-            
-            // Si l'utilisateur a le droit de noter (enseignant)
+
+            // Si l'utilisateur a le droit de noter (enseignant).
             if (has_capability('mod/assign:grade', $context)) {
-                
-                // Requete pour recuperer les devoirs rendus
+                // Requete pour recuperer les devoirs rendus.
                 $rs = $DB->get_recordset_sql('SELECT
                                                   s.assignment as assignment,
                                                   s.userid as userid,
@@ -138,14 +156,14 @@ function creer_notif($courses, &$notification, $mod) {
                                                   s.assignment = '. $assignment->id);
 
                 $unmarkedsubmissions = array();
-                // On recupere les ids de la table 'assign_submission' de chaque nouveau devoir pour chaque etudiant
+                // On recupere les ids de la table 'assign_submission' de chaque nouveau devoir pour chaque etudiant.
                 foreach ($rs as $rd) {
                     $unmarkedsubmissions[$rd->assignment][$rd->userid] = $rd->id;
                 }
                 $rs->close();
 
                 // Compte le nombre de devoirs a corriger depuis la derniere suppression manuelle de la notification
-                // (depuis le debut si jamais de suppression)
+                // (depuis le debut si jamais de suppression).
                 $submissions = 0;
                 if ($students = get_enrolled_users($context, 'mod/assign:view', 0, 'u.id')) {
                     foreach ($students as $student) {
@@ -155,7 +173,7 @@ function creer_notif($courses, &$notification, $mod) {
                     }
                 }
 
-                // S'il y a des devoirs a corriger on cree une notification
+                // S'il y a des devoirs a corriger on cree une notification.
                 if ($submissions) {
                     $str = '<div class="assign overview" id="'.$assignment->coursemodule.'">' .
                            '<div class="name">' .
@@ -164,33 +182,33 @@ function creer_notif($courses, &$notification, $mod) {
                                'href="' . $href . '">' .
                            format_string($assignment->name) .
                            '</a></div>';
-                   
-                   
+
+
                     $urlparams = array('id'=>$assignment->coursemodule, 'action'=>'grading');
                     $url = new moodle_url('/mod/assign/view.php', $urlparams);
                     $str .= '<div class="details">' .
                             '<a href="' . $url . '">' .
                             get_string('submissionsnotgraded', 'block_tableau_bord', $submissions) .
                             '</a></div>';
-                    $str .= '</div>'; // division assign overview
+                    $str .= '</div>'; // division assign overview.
                 }
             }
-            // Si l'utilisateur a le droit de soumettre un devoir (etudiant)
+            // Si l'utilisateur a le droit de soumettre un devoir (etudiant).
             if (has_capability('mod/assign:submit', $context)) {
-                // Recuperation de l'etat du devoir de l'utilisateur
+                // Recuperation de l'etat du devoir de l'utilisateur.
                 $parametre_devoir = array('userid' => $USER->id,'assignment' => $assignment->id );
                 $devoir_rendu = $DB->get_record('assign_submission', $parametre_devoir);
-                // Si l'utilisateur a rendu un devoir on n'affiche pas de notification
-                if($devoir_rendu != null){
-                    if($devoir_rendu->status == "submitted"){
+                // Si l'utilisateur a rendu un devoir on n'affiche pas de notification.
+                if ($devoir_rendu != null) {
+                    if ($devoir_rendu->status == "submitted") {
                         continue;
                     }
                 }
-                // Si l'utilisateur a supprime la notification on n'affiche pas de notification
-                if( $notif->time_delete != 0){
+                // Si l'utilisateur a supprime la notification on n'affiche pas de notification.
+                if ($notif->time_delete != 0) {
                     continue;
                 }
-                // Construction de la notification
+                // Construction de la notification.
                 $str = '<div class="assign overview" id="'.$assignment->coursemodule.'">' .
                        '<div class="name">' .
                        $strassignment . ': '.
@@ -199,24 +217,26 @@ function creer_notif($courses, &$notification, $mod) {
                            'href="' . $href . '">' .
                        format_string($assignment->name) .
                        '</a></div>';
-                       
-                       
-                // Calcul de l'intervalle de temps qui reste avant la date de remise
-                $date_limite = $assignmentdate[$assignment->id]; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
+
+
+                // Calcul de l'intervalle de temps qui reste avant la date de remise.
+                // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture).
+                $date_limite = $assignmentdate[$assignment->id];
                 $date_aujourdhui = intval(time()); //timestamp en secondes
                 $intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
                 $intervalle_formate = format_time($intervalle_secondes); // Formate un temps en secondes en un temps en M-J-H-m
                 $jours = intval($intervalle_secondes/(3600*24));
-                
-                // Texte en rouge quand urgence ( <7 jours)
-                if($jours < 7){
+
+                // Texte en rouge quand urgence ( <7 jours).
+                if ($jours < 7) {
                     $str .= '<div class="info" style="color:red;">';
                 } else {
                     $str .= '<div class="info">';
                 }
                 $str .= 'Temps restant : ' .$intervalle_formate. '</div>';
 
-                // S'il y a une date limite on affiche qu'aucun devoir en retard ne peut etre accepte ou alors on affiche cette date limite
+                // S'il y a une date limite on affiche qu'aucun devoir en retard ne peut etre accepte
+                // ou alors on affiche cette date limite.
                 if ($assignment->cutoffdate) {
                     if ($assignment->cutoffdate == $assignment->duedate) {
                         $str .= '<div class="info">' . $strnolatesubmissions . '</div>';
@@ -226,12 +246,12 @@ function creer_notif($courses, &$notification, $mod) {
                     }
                 }
 
-                $str .= '</div>';// division assign overview
+                $str .= '</div>';
             }
 
-            // S'il y a une notification a ajouter
+            // S'il y a une notification a ajouter.
             if(!empty($str)){
-                // S'il n'y a pas encore de notification de devoirs pour ce cours
+                // S'il n'y a pas encore de notification de devoirs pour ce cours.
                 if (empty($notification[$assignment->course]['assign'])) {
                     $notification[$assignment->course]['assign'] = array();
                     $notification[$assignment->course]['assign'][$assignment->coursemodule] = $str;
@@ -239,36 +259,36 @@ function creer_notif($courses, &$notification, $mod) {
                     $notification[$assignment->course]['assign'][$assignment->coursemodule] = $str;
                 }
             }
-        }       
+        }
     }
 
-    if($mod == "forum") {
+    if ($mod == "forum") {
         if (empty($courses) || !is_array($courses) || count($courses) == 0) {
             return array();
         }
-        // Renvoie tous les forums (que les visibiles pour les etudiants)
+        // Renvoie tous les forums (que les visibiles pour les etudiants).
         if (!$forums = get_all_instances_in_courses('forum',$courses)) {
             return;
         }
-        
-        // Courses to search for new posts
+
+        // Courses to search for new posts.
         $coursessqls = array();
         $params = array();
         $tableau_acces_forum = array();
 
-        // Recupere les dates de dernier acces de l'utilisateur pour chaque forum
-        foreach($forums as $forum){
+        // Recupere les dates de dernier acces de l'utilisateur pour chaque forum.
+        foreach ($forums as $forum) {
             $tableau_acces_forum[$forum->id] = 0;
-            
+
             $param = array ('userid' => $USER->id, 'course' => $forum->course, 'module' => 'forum', 'cmid' => $forum->coursemodule);
-            
+
             $infos = $DB->get_records('log', $param);
             $date = 0;
             if(!empty($infos)){
-                foreach($infos as $info){   
+                foreach($infos as $info){
                     if($info->time > $date){
                         $date = $info->time;
-                    }                       
+                    }
                 }
                 if( $date > $tableau_acces_forum[$forum->id]){
                     $tableau_acces_forum[$forum->id] = $date;
@@ -278,32 +298,32 @@ function creer_notif($courses, &$notification, $mod) {
 
         $strforum = get_string('modulenameforum','block_tableau_bord');
         foreach ($forums as $forum) {
-        
-            // Ajoute le forum a la table qui contient les informations concernant la suppression des notifications
+
+            // Ajoute le forum a la table qui contient les informations concernant la suppression des notifications.
             $ajout = new stdClass();
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $forum->coursemodule;
             $ajout->time_delete = '0';
             $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $forum->coursemodule );
             $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
-            
-            // Si ce forum n'est pas presente alors on l'ajoute a la table 
+
+            // Si ce forum n'est pas presente alors on l'ajoute a la table.
             if($notif == false){
-                //On l'ajoute a la table
+                //On l'ajoute a la table.
                 $DB->insert_record('tdb_delete_notifications',$ajout);
-                // On la recupere
+                // On la recupere.
                 $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
             }
-            
-            // Remise a zero des parametres de recherche de nouveaux messages
+
+            // Remise a zero des parametres de recherche de nouveaux messages.
             unset($params);
             $params = array();
-            
+
             $coursessql = '(f.id = ? AND p.created > ?)';
             $params[] = $forum->id;
-            
-            // Si notification jamais supprimee on se base sur la date de dernier acces
-            if($notif->time_delete == 0){
+
+            // Si notification jamais supprimee on se base sur la date de dernier acces.
+            if ($notif->time_delete == 0) {
                 $params[] = $tableau_acces_forum[$forum->id];
             } else {
                 // Si la date de suppression est superieure a la date de dernier acces on se base dessus pour les nouveaux messages
@@ -323,7 +343,7 @@ function creer_notif($courses, &$notification, $mod) {
                     ."WHERE ($coursessql) "
                     .'AND p.userid != ? '
                     .'GROUP BY f.id';
-            
+
             // Recupere un tableau ayant pour cle l'id du forum (course_modules) et contenant cet id ainsi que le nombre de nouveaux messages
             if (!$new = $DB->get_records_sql($sql, $params)) {
                 $new = array();
@@ -333,17 +353,17 @@ function creer_notif($courses, &$notification, $mod) {
             if (!empty($new)) {
                 // Parametre de recherche : l'id du forum dans la table course_modules
                 $parametre_forum = array('id' => $forum->coursemodule);
-                // On recupere l'enregistrement du forum dans la table course_modules 
+                // On recupere l'enregistrement du forum dans la table course_modules
                 if(($forum_info = $DB->get_records('course_modules',$parametre_forum)) == true){
                     $visibilite = $forum_info[$forum->coursemodule]->visible;
                 }
 
                 // Si le forum n'est pas cache et que la disponibilite du forum n'est pas restreinte on cree la notification.
                 if($visibilite /*&& (!$fin_restriction && time() >= $debut_restriction) || (time() < $fin_restriction && time() >= $debut_restriction)*/){
-            
+
                     $str = '';
-                    // Recupere le nombre de nouveaux messages du forum             
-                    $count = $new[$forum->id]->count;               
+                    // Recupere le nombre de nouveaux messages du forum
+                    $count = $new[$forum->id]->count;
                     // S'il y a au moins un nouveau message alors on cree une notification (condition pas utile normalement)
                     if ($count > 0) {
                         $str .= '<div class="overview forum"><div class="name">'.$strforum.': <a title="'.$strforum.'" href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'">'.
@@ -353,7 +373,7 @@ function creer_notif($courses, &$notification, $mod) {
 
                         $str .= '</div></div>';
                     }
-                    
+
                     // S'il y a bien une notification on l'ajoute a la table contenant les autres notifications
                     if(!empty($str)){
                         if (empty($notification[$forum->course]['forum'])) {
@@ -372,7 +392,7 @@ function creer_notif($courses, &$notification, $mod) {
         if (!get_config('journal', 'overview')) {
             return array();
         }
-        
+
         if (empty($courses) || !is_array($courses) || count($courses) == 0) {
             return array();
         }
@@ -382,17 +402,17 @@ function creer_notif($courses, &$notification, $mod) {
         }
 
         $strjournal = get_string('modulenamejournal', 'block_tableau_bord');
-        
+
         $params = array();
         $timenow = time();
         foreach ($journals as $journal) {
-            // Ajoute le journal a la table qui contient les informations concernant la suppression des notifications 
+            // Ajoute le journal a la table qui contient les informations concernant la suppression des notifications
             $ajout = new stdClass();
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $journal->coursemodule;
             $ajout->time_delete = '0';
 
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $journal->coursemodule );     
+            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $journal->coursemodule );
             $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
             // On ajoute ce journal a la table s'il n'y est pas encore present
             if($notif == false){
@@ -406,7 +426,7 @@ function creer_notif($courses, &$notification, $mod) {
             if ($courses[$journal->course]->format == 'weeks' AND $journal->days) {
                 // Date de debut du cours
                 $coursestartdate = $courses[$journal->course]->startdate;
-                // Date de debut du journal -> correspond a la date du debut de la section (= date de debut du cours + 
+                // Date de debut du journal -> correspond a la date du debut de la section (= date de debut du cours +
                 //  un nombre de semaine egal au numero de section)
                 $journal->timestart  = $coursestartdate + (($journal->section - 1) * 608400);
                 $journal->timefinish = 9999999999;
@@ -416,15 +436,15 @@ function creer_notif($courses, &$notification, $mod) {
 
                 // Parametre de recherche : l'id du journal dans la table course_modules
                 $parametre_journal = array('id' => $journal->coursemodule);
-                // On recupere l'enregistrement du journal dans la table course_modules 
+                // On recupere l'enregistrement du journal dans la table course_modules
                 if(($journal_info = $DB->get_records('course_modules',$parametre_journal)) == true){
                     // visibilite (1 si visible, 0 si cache)
                     $visibilite = $journal_info[$journal->coursemodule]->visible;
                 }
-                
+
                 // Si le journal n'est pas cache
                 // (inutile dans le cas ou l'utilisateur est un etudiant
-                //  car la fonction 'get_all_instances_in_courses' ne lui retourne pas les journaux caches) 
+                //  car la fonction 'get_all_instances_in_courses' ne lui retourne pas les journaux caches)
                 if ($visible) {
                     // S'il a une date de fin de restriction
                     $journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish);
@@ -451,12 +471,12 @@ function creer_notif($courses, &$notification, $mod) {
             } else {
                 $date_nouveau_post = $notif->time_delete;
             }
-            
+
             $str="";
             // Si le journal est ouvert alors la notification est cree
             if ($journalopen) {
                 $context = context_module::instance($journal->coursemodule);
-                
+
                 // Si l'utilisateur a le droit d'ajouter un commentaire (enseignant)
                 if (has_capability('mod/journal:manageentries', $context)) {
                     // Requete sql pour compter le nombre de nouvelles modifications dans le journal
@@ -483,10 +503,10 @@ function creer_notif($courses, &$notification, $mod) {
                                      </div>
                                      <div class="detail">
                                         Vous avez '.$new[$journal->id]->count.' nouveaux posts
-                                    </div>                          
+                                    </div>
                                 </div>';
                     }
-    
+
                 } else if (has_capability('mod/journal:addentries', $context)) { // S'il peut ecrire dedans (etudiant)
                     // Requete qui permet de recuperer l'enregistrement dans la table pour le journal de l'utilisateur
                     // si il y a eu une nouvelle note depuis la derniere fois
@@ -498,8 +518,8 @@ function creer_notif($courses, &$notification, $mod) {
                     $params = array();
                     $params[] = $journal->id;
                     $params[] = $date_nouveau_post;
-                    $params[] = $USER->id;              
-                    
+                    $params[] = $USER->id;
+
                     $new = $DB->get_records_sql($sql, $params);
                     // Si la cle ayant pour valeur l'id du journal existe alors il y a eu un nouveau commentaire de l'enseignant
                     if (array_key_exists($journal->id, $new)) {
@@ -511,11 +531,11 @@ function creer_notif($courses, &$notification, $mod) {
                                     </div>
                                     <div class="detail">
                                         Vous avez un nouveau commentaire de l\'enseignant.
-                                    </div>  
+                                    </div>
                                 </div>';
                     }
                 }
-                
+
                 if(!empty($str)){
                     if (empty($notification[$journal->course]['journal'])) {
                         $notification[$journal->course]['journal'] = array();
@@ -529,7 +549,7 @@ function creer_notif($courses, &$notification, $mod) {
     }
 
     if($mod == "quiz"){
-    
+
         if (empty($courses) || !is_array($courses) || count($courses) == 0) {
             return array();
         }
@@ -546,14 +566,14 @@ function creer_notif($courses, &$notification, $mod) {
         $now = time();
         foreach ($quizzes as $quiz) {
             $str="";
-            
-            // Ajoute le test a la table qui contient les informations concernant la suppression des notifications 
+
+            // Ajoute le test a la table qui contient les informations concernant la suppression des notifications
             $ajout = new stdClass();
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $quiz->coursemodule;
             $ajout->time_delete = '0';
-            
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $quiz->coursemodule );        
+
+            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $quiz->coursemodule );
             $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
             // On ajoute ce test a la table s'il n'y est pas encore present
             if($notif == false){
@@ -563,10 +583,10 @@ function creer_notif($courses, &$notification, $mod) {
 
             // Parametre de recherche : l'id du quiz dans la table course_modules
             $param_quiz = array('id' => $quiz->coursemodule);
-            // On recupere l'enregistrement du quiz dans la table course_modules 
-            if(($quiz_info = $DB->get_records('course_modules',$param_quiz)) == true){          
+            // On recupere l'enregistrement du quiz dans la table course_modules
+            if(($quiz_info = $DB->get_records('course_modules',$param_quiz)) == true){
                 // visibilite (1 si visible, 0 si cache)
-                //  ->utile que pour un utilisateur enseignant car pour l'etudiant cette condition 
+                //  ->utile que pour un utilisateur enseignant car pour l'etudiant cette condition
                 //  est deja utilisee dans la fonction get_all_instances_in_courses
                 $visibilite = $quiz_info[$quiz->coursemodule]->visible;
                 // Si les restrictions empechent l'acces au quizz alors on n'affiche pas de notification
@@ -630,7 +650,7 @@ function creer_notif($courses, &$notification, $mod) {
                 } else if (has_any_capability(array('mod/quiz:reviewmyattempts', 'mod/quiz:attempt'), $context)) { // Etudiant
                     if (isset($USER->id)){
                         $attempts = quiz_get_user_attempts($quiz->id, $USER->id);
-                        
+
                         $nbattempts = count($attempts); // nombre de tentatives
                         // Creation d'une notification si pas encore de tentative et pas supprimee
                         if($nbattempts == 0 && $notif->time_delete == 0 ){
@@ -641,14 +661,14 @@ function creer_notif($courses, &$notification, $mod) {
                                     ' href="' . $CFG->wwwroot . '/mod/quiz/view.php?id=' .
                                     $quiz->coursemodule . '">' .
                                     $quiz->name . '</a></div>';
-                            
+
                             // Calcul du temps restant
                             $date_limite = $quiz->timeclose; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
                             $date_aujourdhui = $now; //timestamp en secondes
                             $intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
                             $intervalle_formate = format_time($intervalle_secondes); // Intervalle formate en J-H-m...
                             $jours = intval($intervalle_secondes/(3600*24));
-                        
+
                             // Texte en rouge quand urgence ( <7 jours )
                             if($jours < 7){
                                 $str .= '<div class="info" style="color:red;">';

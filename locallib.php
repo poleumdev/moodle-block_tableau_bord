@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Display overview for courses
  *
@@ -273,7 +275,7 @@ function mode_edition_cours() {
     $USER->userediting_course = true;
 }
 
-function quitter_edition_cours(){
+function quitter_edition_cours() {
     global $USER;
     // Passe la variable d'edition a faux.
     $USER->userediting_course = false;
