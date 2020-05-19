@@ -1,0 +1,916 @@
+<?php
+//Renvoie les notifs des cours pour un type d'activite sous la forme clé - valeur : id_course_module - code_html_module
+function creer_notif($courses,&$notification,$mod){
+
+    global $USER, $CFG, $DB;
+	if($mod=="assign"){
+		if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+			return array();
+		}
+		
+		// Renvoie tous les devoirs (que les visibles pour un etudiant)
+		if (!$assignments = get_all_instances_in_courses('assign', $courses)) {
+			return;
+		}
+
+		$assignmentids = array();
+		$assignmentdate = array();
+		
+		// Boucle pour recuperer les id des devoirs qui necessitent une notification
+		foreach ($assignments as $key => $assignment) {
+			// Ajoute le devoir a la table qui contient les informations concernant la suppression des notifications
+			$ajout = new stdClass();
+			$ajout->id_user = $USER->id;
+			$ajout->id_course_module = $assignment->coursemodule;
+			$ajout->time_delete = '0';
+			
+			$parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );		
+			$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			// On ajoute ce devoir a la table s'il n'y est pas encore present
+			if($notif == false){
+				//On l'ajoute a la table
+				$DB->insert_record('tdb_delete_notifications',$ajout);
+			}
+		
+			//////////////////////////////////////////////////////////////////
+			
+			
+			$time = time();
+			$est_ouvert = false;
+			$date_limite = false;
+			// S'il y a une date "a remettre jusqu'au" et/ou une date limite de rendu 
+			if ($assignment->duedate || $assignment->cutoffdate) {
+				$cutoffdate = false;
+				$duedate = false;
+				if ($assignment->cutoffdate) {
+					$cutoffdate = $assignment->cutoffdate;
+				}			
+				if ($assignment->duedate) {
+					$duedate = $assignment->duedate;
+				}
+				
+				
+				// Parametre de recherche : l'id du devoir dans la table course_modules
+				$parametre_devoir = array('id' => $assignment->coursemodule);
+				// On recupere l'enregistrement du devoir dans la table course_modules 
+				if(($devoir_info = $DB->get_records('course_modules',$parametre_devoir)) == true){
+					// Date de debut de restriction
+					//$debut_restriction = $devoir_info[$assignment->coursemodule]->availablefrom;
+					// Date de fin de restriction
+					//$fin_restriction = $devoir_info[$assignment->coursemodule]->availableuntil;
+					// visibilite (1 si visible, 0 si cache)
+					$visibilite = $devoir_info[$assignment->coursemodule]->visible;
+					
+				}
+
+				if($visibilite){
+					// S'il y a une date "a remettre jusqu'au"
+					if($duedate){
+						// S'il y a une restriction
+						/*if($fin_restriction){
+							$est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate && $debut_restriction <= $time && $time <= $fin_restriction);
+						} else {*/
+							$est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate /*&& $debut_restriction <= $time*/);
+                            /*}*/
+						$date_limite = intval($assignment->duedate); // timestamp en secondes
+					} else if ($cutoffdate) { // Sinon s'il y a une date limite
+						// S'il y a une restriction
+						/*if($fin_restriction){
+							$est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $cutoffdate && $debut_restriction <= $time && $time <= $fin_restriction);
+						} else {*/
+							$est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $cutoffdate);
+                            /*}*/
+						$date_limite = intval($assignment->cutoffdate); // timestamp en secondes
+					}
+				}
+			}
+			// Si les conditions d'affichage de la notifications sont respectees alors on ajoute le devoir aux tableaux
+			if($est_ouvert) {
+				$assignmentids[] = $assignment->id; // Tableau contenant les id des devoirs
+				$assignmentdate[$assignment->id] = $date_limite; // Tableau contenant la date limite d'affichage pour chaque devoir
+			}
+			
+		}
+		
+		// Si aucun devoir ne necessite de notification alors c'est termine
+		if (empty($assignmentids)) {
+			return true;
+		}
+
+		
+		require_once($CFG->dirroot . '/mod/assign/locallib.php');
+		
+		// Recuperation de toutes les chaines de caracteres utiles a afficher
+		$strduedate = get_string('duedate', 'block_tableau_bord');
+		$strcutoffdate = get_string('nosubmissionsacceptedafter', 'block_tableau_bord');
+		$strnolatesubmissions = get_string('nolatesubmissions', 'block_tableau_bord');
+		$strduedateno = get_string('duedateno', 'block_tableau_bord');
+		$strgraded = get_string('graded', 'block_tableau_bord');
+		$strnotgradedyet = get_string('notgradedyet', 'block_tableau_bord');
+		$strnotsubmittedyet = get_string('notsubmittedyet', 'block_tableau_bord');
+		$strsubmitted = get_string('submitted', 'block_tableau_bord');
+		$strassignment = get_string('modulenameassign', 'block_tableau_bord');
+		$strreviewed = get_string('reviewed', 'block_tableau_bord');
+
+		// We do all possible database work here *outside* of the loop to ensure this scales.
+		list($sqlassignmentids, $assignmentidparams) = $DB->get_in_or_equal($assignmentids);
+		$mysubmissions = null;
+		$unmarkedsubmissions = null;
+
+		foreach ($assignments as $assignment) {
+			
+			// Si ce devoir ne necessite pas de notification on passe au suivant
+			if (!in_array($assignment->id, $assignmentids)) {
+				continue;
+			}
+			
+			// Recuperation des informations du devoir dans la table 'delete_notif'
+			$parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );		
+			$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			
+			
+			$dimmedclass = '';
+			if (!$assignment->visible) {
+				$dimmedclass = ' class="dimmed"';
+			}
+			
+			// Lien vers le devoir
+			$href = $CFG->wwwroot . '/mod/assign/view.php?id=' . $assignment->coursemodule;
+						
+			$str=""; // Contient le code html de la notification
+			
+			$context = context_module::instance($assignment->coursemodule);
+			
+			// Si l'utilisateur a le droit de noter (enseignant)
+			if (has_capability('mod/assign:grade', $context)) {
+				
+				// Requete pour recuperer les devoirs rendus
+				$rs = $DB->get_recordset_sql('SELECT
+												  s.assignment as assignment,
+												  s.userid as userid,
+												  s.id as id,
+												  s.status as status,
+												  g.timemodified as timegraded
+											  FROM {assign_submission} s
+											  LEFT JOIN {assign_grades} g ON
+												  s.userid = g.userid AND
+												  s.assignment = g.assignment
+											  WHERE
+												  ( g.timemodified is NULL OR
+												  s.timemodified > g.timemodified ) AND
+												  s.timemodified > '. $notif->time_delete .' AND
+												  s.timemodified IS NOT NULL AND
+												  s.status = "submitted" AND
+												  s.assignment = '. $assignment->id);
+
+				$unmarkedsubmissions = array();
+				// On recupere les ids de la table 'assign_submission' de chaque nouveau devoir pour chaque etudiant
+				foreach ($rs as $rd) {
+					$unmarkedsubmissions[$rd->assignment][$rd->userid] = $rd->id;
+				}
+				$rs->close();
+				
+				// Sans prise en compte de la suppression manuelle
+				/*if (!isset($unmarkedsubmissions)) {
+					// Build up and array of unmarked submissions indexed by assignment id/ userid
+					// for use where the user has grading rights on assignment.
+					$dbparams = array_merge(array(ASSIGN_SUBMISSION_STATUS_SUBMITTED), $assignmentidparams);
+					//var_dump($dbparams);
+					//var_dump($notif->time_delete);
+					$rs = $DB->get_recordset_sql('SELECT
+													  s.assignment as assignment,
+													  s.userid as userid,
+													  s.id as id,
+													  s.status as status,
+													  g.timemodified as timegraded
+												  FROM {assign_submission} s
+												  LEFT JOIN {assign_grades} g ON
+													  s.userid = g.userid AND
+													  s.assignment = g.assignment
+												  WHERE
+													  ( g.timemodified is NULL OR
+													  s.timemodified > g.timemodified ) AND
+													  s.timemodified IS NOT NULL AND
+													  s.status = ? AND
+													  s.assignment ' . $sqlassignmentids, $dbparams);
+					//var_dump($rs);
+					$unmarkedsubmissions = array();
+					foreach ($rs as $rd) {
+						$unmarkedsubmissions[$rd->assignment][$rd->userid] = $rd->id;
+					}
+					$rs->close();
+				}*/
+
+				
+				
+				// Compte le nombre de devoirs a corriger depuis la derniere suppression manuelle de la notification
+				// (depuis le debut si jamais de suppression)
+				$submissions = 0;
+				if ($students = get_enrolled_users($context, 'mod/assign:view', 0, 'u.id')) {
+					foreach ($students as $student) {
+						if (isset($unmarkedsubmissions[$assignment->id][$student->id])) {
+							$submissions++;
+						}
+					}
+				}
+							
+				
+				// S'il y a des devoirs a corriger on cree une notification
+				if ($submissions) {
+					$str = '<div class="assign overview" id="'.$assignment->coursemodule.'">' .
+						   '<div class="name">' .
+						   $strassignment . ': '.
+						   '<a title="' . $strassignment . '" ' .
+							   'href="' . $href . '">' .
+						   format_string($assignment->name) .
+						   '</a></div>';
+				   
+				   
+					$urlparams = array('id'=>$assignment->coursemodule, 'action'=>'grading');
+					$url = new moodle_url('/mod/assign/view.php', $urlparams);
+					$str .= '<div class="details">' .
+							'<a href="' . $url . '">' .
+							get_string('submissionsnotgraded', 'block_tableau_bord', $submissions) .
+							'</a></div>';
+					$str .= '</div>'; // division assign overview
+				}
+			}
+			// Si l'utilisateur a le droit de soumettre un devoir (etudiant)
+			if (has_capability('mod/assign:submit', $context)) {
+				// Recuperation de l'etat du devoir de l'utilisateur
+				$parametre_devoir = array('userid' => $USER->id,'assignment' => $assignment->id );
+				$devoir_rendu = $DB->get_record('assign_submission', $parametre_devoir);
+				// Si l'utilisateur a rendu un devoir on n'affiche pas de notification
+				if($devoir_rendu != null){
+					if($devoir_rendu->status == "submitted"){
+						continue;
+					}
+				}
+				// Si l'utilisateur a supprime la notification on n'affiche pas de notification
+				if( $notif->time_delete != 0){
+					continue;
+				}
+				// Construction de la notification
+				$str = '<div class="assign overview" id="'.$assignment->coursemodule.'">' .
+					   '<div class="name">' .
+					   $strassignment . ': '.
+					   '<a ' . $dimmedclass .
+						   'title="' . $strassignment . '" ' .
+						   'href="' . $href . '">' .
+					   format_string($assignment->name) .
+					   '</a></div>';
+					   
+					   
+				// Calcul de l'intervalle de temps qui reste avant la date de remise
+				$date_limite = $assignmentdate[$assignment->id]; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
+				$date_aujourdhui = intval(time()); //timestamp en secondes
+				$intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
+				$intervalle_formate = format_time($intervalle_secondes); // Formate un temps en secondes en un temps en M-J-H-m
+				$jours = intval($intervalle_secondes/(3600*24));
+				
+				// Texte en rouge quand urgence ( <7 jours)
+				if($jours < 7){
+					$str .= '<div class="info" style="color:red;">';
+				} else {
+					$str .= '<div class="info">';
+				}
+				$str .= 'Temps restant : ' .$intervalle_formate. '</div>';
+
+				// S'il y a une date limite on affiche qu'aucun devoir en retard ne peut etre accepte ou alors on affiche cette date limite
+				if ($assignment->cutoffdate) {
+					if ($assignment->cutoffdate == $assignment->duedate) {
+						$str .= '<div class="info">' . $strnolatesubmissions . '</div>';
+					} else {
+						$userdate = userdate($assignment->cutoffdate);
+						$str .= '<div class="info">' . $strcutoffdate . ': ' . $userdate . '</div>';
+					}
+				}
+				
+				// Pour indiquer l'etat du devoir (utile ?)
+				/*if (!isset($mysubmissions)) {
+					// Get all user submissions, indexed by assignment id.
+					$dbparams = array_merge(array($USER->id, $USER->id), $assignmentidparams);
+					$mysubmissions = $DB->get_records_sql('SELECT
+															   a.id AS assignment,
+															   a.nosubmissions AS nosubmissions,
+															   g.timemodified AS timemarked,
+															   g.grader AS grader,
+															   g.grade AS grade,
+															   s.status AS status
+														   FROM {assign} a
+														   LEFT JOIN {assign_grades} g ON
+															   g.assignment = a.id AND
+															   g.userid = ?
+														   LEFT JOIN {assign_submission} s ON
+															   s.assignment = a.id AND
+															   s.userid = ?
+														   WHERE a.id ' . $sqlassignmentids, $dbparams);
+				}
+
+				$str .= '<div class="details">';
+				$str .= get_string('mysubmission', 'assign');
+				$submission = $mysubmissions[$assignment->id];
+				if ($submission->nosubmissions) {
+					$str .= get_string('offline', 'assign');
+				} else if (!$submission->status || $submission->status == 'draft') {
+					$str .= $strnotsubmittedyet;
+				} else {
+					$str .= get_string('submissionstatus_' . $submission->status, 'assign');
+				}
+				if (!$submission->grade || $submission->grade < 0) {
+					$str .= ', ' . get_string('notgraded', 'assign');
+				} else {
+					$str .= ', ' . get_string('graded', 'assign');
+				}
+				$str .= '</div>';*/
+				
+				$str .= '</div>';// division assign overview
+			}
+
+			// S'il y a une notification a ajouter
+			if(!empty($str)){
+				// S'il n'y a pas encore de notification de devoirs pour ce cours
+				if (empty($notification[$assignment->course]['assign'])) {
+					$notification[$assignment->course]['assign'] = array();
+					$notification[$assignment->course]['assign'][$assignment->coursemodule] = $str;
+				} else {
+					$notification[$assignment->course]['assign'][$assignment->coursemodule] = $str;
+				}
+			}
+		}		
+	}
+	
+
+	if($mod=="forum"){
+
+		if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+			return array();
+		}
+		// Renvoie tous les forums (que les visibiles pour les etudiants)
+		if (!$forums = get_all_instances_in_courses('forum',$courses)) {
+			return;
+		}
+		
+		// Courses to search for new posts
+		$coursessqls = array();
+		$params = array();
+		$tableau_acces_forum = array();
+
+		// Recupere les dates de dernier acces de l'utilisateur pour chaque forum
+		foreach($forums as $forum){
+			$tableau_acces_forum[$forum->id] = 0;
+			
+			$param = array ('userid' => $USER->id, 'course' => $forum->course, 'module' => 'forum', 'cmid' => $forum->coursemodule);
+			
+			$infos = $DB->get_records('log', $param);
+			$date = 0;
+			if(!empty($infos)){
+				foreach($infos as $info){	
+					if($info->time > $date){
+						$date = $info->time;
+					}						
+				}
+				if( $date > $tableau_acces_forum[$forum->id]){
+					$tableau_acces_forum[$forum->id] = $date;
+				}
+			}
+		}
+		
+		
+		$strforum = get_string('modulenameforum','block_tableau_bord');
+		foreach ($forums as $forum) {
+		
+			// Ajoute le forum a la table qui contient les informations concernant la suppression des notifications
+			$ajout = new stdClass();
+			$ajout->id_user = $USER->id;
+			$ajout->id_course_module = $forum->coursemodule;
+			$ajout->time_delete = '0';
+			$parametre_notif = array('id_user' => $USER->id,'id_course_module' => $forum->coursemodule );
+			$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			
+			// Si ce forum n'est pas presente alors on l'ajoute a la table 
+			if($notif == false){
+				//On l'ajoute a la table
+				$DB->insert_record('tdb_delete_notifications',$ajout);
+				// On la recupere
+				$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			}
+			
+			// Remise a zero des parametres de recherche de nouveaux messages
+			unset($params);
+			$params = array();
+			
+			// Sans la suppression manuelle
+			// Si l'utilisateur n'a jamais accede au forum
+			/*if ($tableau_acces_forum[$forum->id] == 0) {
+				$coursessql = '(f.id = ?)';
+				$params[] = $forum->id;
+			// Concatene a la requete sql le code qui permet de recuperer un forum si il y a eu un message depuis le dernier acces
+			} else {
+				$coursessql = '(f.id = ? AND p.created > ?)';
+				$params[] = $forum->id;
+				$params[] = $tableau_acces_forum[$forum->id];
+			}*/
+			
+			
+			
+			$coursessql = '(f.id = ? AND p.created > ?)';
+			$params[] = $forum->id;
+			
+			// Si notification jamais supprimee on se base sur la date de dernier acces
+			if($notif->time_delete == 0){
+				$params[] = $tableau_acces_forum[$forum->id];
+			} else {
+				// Si la date de suppression est superieure a la date de dernier acces on se base dessus pour les nouveaux messages
+				if($notif->time_delete > $tableau_acces_forum[$forum->id]){
+					$params[] = $notif->time_delete;
+				} else {
+					$params[] = $tableau_acces_forum[$forum->id];
+				}
+			}
+			
+			$params[] = $USER->id;
+			// Requete sql permettant de recuperer le nombre de nouveaux messages pour le forum
+			$sql = "SELECT f.id, COUNT(*) as count "
+					.'FROM {forum} f '
+					.'JOIN {forum_discussions} d ON d.forum  = f.id '
+					.'JOIN {forum_posts} p ON p.discussion = d.id '
+					."WHERE ($coursessql) "
+					.'AND p.userid != ? '
+					.'GROUP BY f.id';
+			
+			// Recupere un tableau ayant pour cle l'id du forum (course_modules) et contenant cet id ainsi que le nombre de nouveaux messages
+			if (!$new = $DB->get_records_sql($sql, $params)) {
+				$new = array();
+			}
+			
+			// Si la variable $new n'est pas vide alors il y a au moins un nouveau message dans le forum
+			if (!empty($new)) {
+		
+				// Parametre de recherche : l'id du forum dans la table course_modules
+				$parametre_forum = array('id' => $forum->coursemodule);
+				// On recupere l'enregistrement du forum dans la table course_modules 
+				if(($forum_info = $DB->get_records('course_modules',$parametre_forum)) == true){
+					// Date de debut de restriction
+					//$debut_restriction = $forum_info[$forum->coursemodule]->availablefrom;
+					// Date de fin de restriction
+					//$fin_restriction = $forum_info[$forum->coursemodule]->availableuntil;	
+					// visibilite (1 si visible, 0 si cache)
+					$visibilite = $forum_info[$forum->coursemodule]->visible;
+				}
+
+				// Si le forum n'est pas cache et que la disponibilite du forum n'est pas restreinte on cree la notification.
+				if($visibilite /*&& (!$fin_restriction && time() >= $debut_restriction) || (time() < $fin_restriction && time() >= $debut_restriction)*/){
+			
+					$str = '';
+					// Recupere le nombre de nouveaux messages du forum				
+					$count = $new[$forum->id]->count; 				
+					// S'il y a au moins un nouveau message alors on cree une notification (condition pas utile normalement)
+					if ($count > 0) {
+						$str .= '<div class="overview forum"><div class="name">'.$strforum.': <a title="'.$strforum.'" href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'">'.
+							$forum->name.'</a></div>';
+						$str .= '<div class="info"><span class="postsincelogin">';
+						$str .= get_string('overviewnumpostssince', 'block_tableau_bord', $count)."</span>";
+
+						$str .= '</div></div>';
+					}
+					
+					// S'il y a bien une notification on l'ajoute a la table contenant les autres notifications
+					if(!empty($str)){
+						if (empty($notification[$forum->course]['forum'])) {
+							$notification[$forum->course]['forum'] = array();
+							$notification[$forum->course]['forum'][$forum->coursemodule] = $str;
+						} else {
+							$notification[$forum->course]['forum'][$forum->coursemodule] = $str;
+						}
+					}
+				}
+			}
+		}
+
+		// Fonctionnel mais beaucoup de code inutile
+		/*foreach ($forums as $forum) {
+			unset($params);
+			$params = array();
+			// Si l'utilisateur n'a jamais accede au forum
+			if ($tableau_acces_forum[$forum->id] == 0) {
+				$coursessql = '(f.id = ?)';
+				$params[] = $forum->id;
+			// Concatene a la requete sql le code qui permet de recuperer un forum si il y a eu un message depuis le dernier acces
+			} else {
+				$coursessql = '(f.id = ? AND p.created > ?)';
+				$params[] = $forum->id;
+				$params[] = $tableau_acces_forum[$forum->id];
+			}
+			
+			$params[] = $USER->id;
+			
+			$sql = "SELECT f.id, COUNT(*) as count "
+					.'FROM {forum} f '
+					.'JOIN {forum_discussions} d ON d.forum  = f.id '
+					.'JOIN {forum_posts} p ON p.discussion = d.id '
+					."WHERE ($coursessql) "
+					.'AND p.userid != ? '
+					.'GROUP BY f.id';
+			
+			// Recupere les forums concernes par la requete
+			if (!$news[] = $DB->get_records_sql($sql, $params)) {
+				$news[] = array(); // avoid warnings
+			}
+		}
+		
+		// S'il n'y a aucune notification la fonction s'arrete
+		if (empty($news)) {
+			return;
+		}
+
+		$strforum = get_string('modulename','forum');
+		var_dump($news);
+		foreach ($forums as $forum) {
+			// Parametre de recherche : l'id du forum dans la table course_modules
+			$parametre_forum = array('id' => $forum->coursemodule);
+			// On recupere l'enregistrement du forum dans la table course_modules 
+			if(($forum_info = $DB->get_records('course_modules',$parametre_forum)) == true){
+				// Date de debut de restriction
+				$debut_restriction = $forum_info[$forum->coursemodule]->availablefrom;
+				// Date de fin de restriction
+				$fin_restriction = $forum_info[$forum->coursemodule]->availableuntil;	
+				// visibilite
+				$visibilite = $forum_info[$forum->coursemodule]->visible;
+			}
+			// Si le forum n'est pas cache et que la disponibilite du forum n'est pas restreinte on recherche le forum dans la table $news
+			if( $visibilite && (!$fin_restriction && time() >= $debut_restriction) || (time() < $fin_restriction && time() >= $debut_restriction)){
+				foreach($news as $new){
+					
+					$str = '';
+					$count = 0;
+					// Recupere le nombre de nouveaux messages du forum
+					if (array_key_exists($forum->id, $new) && !empty($new[$forum->id])) {
+						$count = $new[$forum->id]->count; 
+					}
+					
+					// S'il y a au moins un nouveau message alors on cree une notification
+					if ($count > 0) {
+						$str .= '<div class="overview forum"><div class="name">'.$strforum.': <a title="'.$strforum.'" href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'">'.
+							$forum->name.'</a></div>';
+						$str .= '<div class="info"><span class="postsincelogin">';
+						$str .= get_string('overviewnumpostssince', 'forum', $count)."</span>";
+
+						$str .= '</div></div>';
+					}
+					
+					// S'il y a bien une notification on l'ajoute a la table contenant les autres notifications
+					if(!empty($str)){
+						if (empty($notification[$forum->course]['forum'])) {
+							$notification[$forum->course]['forum'] = array();
+							$notification[$forum->course]['forum'][$forum->coursemodule] = $str;
+						} else {
+							$notification[$forum->course]['forum'][$forum->coursemodule] = $str;
+						}
+					}
+				}
+			}
+		}*/
+		
+	}
+
+	if($mod=="journal"){
+		if (!get_config('journal', 'overview')) {
+			return array();
+		}
+		
+		if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+			return array();
+		}
+
+		if (!$journals = get_all_instances_in_courses('journal', $courses)) {
+			return array();
+		}
+
+		$strjournal = get_string('modulenamejournal', 'block_tableau_bord');
+		
+		$params = array();
+		$timenow = time();
+		foreach ($journals as $journal) {
+			
+			// Ajoute le journal a la table qui contient les informations concernant la suppression des notifications 
+			$ajout = new stdClass();
+			$ajout->id_user = $USER->id;
+			$ajout->id_course_module = $journal->coursemodule;
+			$ajout->time_delete = '0';
+			
+			$parametre_notif = array('id_user' => $USER->id,'id_course_module' => $journal->coursemodule );		
+			$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			// On ajoute ce journal a la table s'il n'y est pas encore present
+			if($notif == false){
+				$DB->insert_record('tdb_delete_notifications',$ajout);
+				$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			}
+
+
+			
+			$courses[$journal->course]->format = $DB->get_field('course', 'format', array('id' => $journal->course));
+			// Si le cours a pour format "weeks" et que le journal a une duree limitee alors on regarde s'il est toujours ouvert
+			// Sinon il l'est toujours
+			if ($courses[$journal->course]->format == 'weeks' AND $journal->days) {
+				// Date de debut du cours
+				$coursestartdate = $courses[$journal->course]->startdate;
+				// Date de debut du journal -> correspond a la date du debut de la section (= date de debut du cours + 
+				//  un nombre de semaine egal au numero de section)
+				$journal->timestart  = $coursestartdate + (($journal->section - 1) * 608400);
+				
+				if (!empty($journal->days)) {
+					$journal->timefinish = $journal->timestart + (3600 * 24 * $journal->days);
+				} else {
+					$journal->timefinish = 9999999999;
+				}
+				
+				
+				// Parametre de recherche : l'id du journal dans la table course_modules
+				$parametre_journal = array('id' => $journal->coursemodule);
+				// On recupere l'enregistrement du journal dans la table course_modules 
+				if(($journal_info = $DB->get_records('course_modules',$parametre_journal)) == true){
+					// Date de debut de restriction
+					//$debut_restriction = $journal_info[$journal->coursemodule]->availablefrom;
+					// Date de fin de restriction
+					//$fin_restriction = $journal_info[$journal->coursemodule]->availableuntil;	
+					// visibilite (1 si visible, 0 si cache)
+					$visibilite = $journal_info[$journal->coursemodule]->visible;
+				}
+				
+				// Si le journal n'est pas cache
+				// (inutile dans le cas ou l'utilisateur est un etudiant
+				//  car la fonction 'get_all_instances_in_courses' ne lui retourne pas les journaux caches) 
+				if($visible){
+					// S'il a une date de fin de restriction
+					/*if($fin_restriction){
+						// Le journal est ouvert si : 
+						// sa date d'ouverture est inferieure a la date actuelle
+						// et sa date de fin est superieure a la date actuelle
+						// et ses dates de debut et de fin sont incluses dans les dates de restriction
+						$journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish && $journal->timestart >= $debut_restriction && $journal->timefinish < $fin_restriction);
+					} else {*/
+						$journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish /*&& $journal->timestart >= $debut_restriction*/ );
+                        /*}*/
+				}
+			} else {
+				$journalopen = true;
+			}
+
+			// Parametres pour rechercher les infos de l'utilisateur concernant le journal
+			$param_utilisateur = array ('userid' => $USER->id,'cmid' => $journal->coursemodule);
+			$date_dernier_acces = 0;
+			// Recuperation de la date de dernier acces de l'utilisateur
+			if(($utilisateur_info = $DB->get_records('log',$param_utilisateur)) == true){
+				foreach($utilisateur_info as $info){
+					if($info->time > $date_dernier_acces){
+						$date_dernier_acces = $info->time;
+					}
+				}
+			}
+			$date_nouveau_post = 0;
+			// Si la date de dernier acces est posterieure a la suppression manuelle de la notification
+			if($date_dernier_acces >= $notif->time_delete){
+				$date_nouveau_post = $date_dernier_acces;
+			} else {
+				$date_nouveau_post = $notif->time_delete;
+			}
+			
+			$str="";
+			// Si le journal est ouvert alors la notification est cree
+			if ($journalopen) {
+				$context = context_module::instance($journal->coursemodule);
+				
+				// Si l'utilisateur a le droit d'ajouter un commentaire (enseignant)
+				if (has_capability('mod/journal:manageentries', $context)) {
+					// Requete sql pour compter le nombre de nouvelles modifications dans le journal
+					$sql = 'SELECT j.journal, COUNT(*) as count
+										FROM {journal_entries} j
+										WHERE j.journal = ? AND j.modified > ?
+										AND j.userid != ? ';
+										
+					// Parametres pour la requete
+					unset($params);
+					$params = array();
+					$params[] = $journal->id;
+					$params[] = $date_nouveau_post;
+					$params[] = $USER->id;
+					// Recupere un tableau ayant pour cle l'id du journal (table journal) et contenant cet id ainsi que le nombre de nouveaux messages
+					$new = $DB->get_records_sql($sql, $params);
+					// Si la cle ayant pour valeur l'id du journal existe alors il y a de nouvelles modifs de journal
+					if (array_key_exists($journal->id, $new)) {
+						$str = '<div class="journal overview" id="'.$journal->coursemodule.'">
+									<div class="name">'.
+									   $strjournal.': <a '.($journal->visible?'':' class="dimmed"').
+									   ' href="'.$CFG->wwwroot.'/mod/journal/view.php?id='.$journal->coursemodule.'">'.
+									   $journal->name.'</a>
+									 </div>
+									 <div class="detail">
+										Vous avez '.$new[$journal->id]->count.' nouveaux posts
+									</div>							
+								</div>';
+					}
+	
+				} else if (has_capability('mod/journal:addentries', $context)) { // S'il peut ecrire dedans (etudiant)
+					// Requete qui permet de recuperer l'enregistrement dans la table pour le journal de l'utilisateur
+					// si il y a eu une nouvelle note depuis la derniere fois
+					$sql = 'SELECT j.journal
+							FROM {journal_entries} j
+							WHERE j.journal = ? AND j.timemarked > ?
+							AND j.userid = ? ';
+					unset($params);
+					$params = array();
+					$params[] = $journal->id;
+					$params[] = $date_nouveau_post;
+					$params[] = $USER->id;				
+					
+					$new = $DB->get_records_sql($sql, $params);
+					// Si la cle ayant pour valeur l'id du journal existe alors il y a eu un nouveau commentaire de l'enseignant
+					if (array_key_exists($journal->id, $new)) {
+						$str = '<div class="journal overview" id="'.$journal->coursemodule.'">
+									<div class="name">'.
+									   $strjournal.': <a '.($journal->visible?'':' class="dimmed"').
+									   ' href="'.$CFG->wwwroot.'/mod/journal/view.php?id='.$journal->coursemodule.'">'.
+									   $journal->name.'</a>
+									</div>
+									<div class="detail">
+										Vous avez un nouveau commentaire de l\'enseignant.
+									</div>	
+								</div>';
+					}
+				}
+				
+				if(!empty($str)){
+					if (empty($notification[$journal->course]['journal'])) {
+						$notification[$journal->course]['journal'] = array();
+						$notification[$journal->course]['journal'][$journal->coursemodule] = $str;
+					} else {
+						$notification[$journal->course]['journal'][$journal->coursemodule] = $str;
+					}
+				}
+			}
+		}
+	}
+
+	if($mod == "quiz"){
+	
+		if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+			return array();
+		}
+
+		// Recupere toutes les instances de tests (que les visibles pour un etudiant)
+		if (!$quizzes = get_all_instances_in_courses('quiz', $courses)) {
+			return;
+		}
+
+		// Recupere des phrases dans le fichier langue
+		$strquiz = get_string('modulenamequiz', 'block_tableau_bord');
+		$strnoattempts = get_string('noattempts', 'block_tableau_bord');
+
+		$now = time();
+		foreach ($quizzes as $quiz) {
+			$str="";
+			
+			// Ajoute le test a la table qui contient les informations concernant la suppression des notifications 
+			$ajout = new stdClass();
+			$ajout->id_user = $USER->id;
+			$ajout->id_course_module = $quiz->coursemodule;
+			$ajout->time_delete = '0';
+			
+			$parametre_notif = array('id_user' => $USER->id,'id_course_module' => $quiz->coursemodule );		
+			$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			// On ajoute ce test a la table s'il n'y est pas encore present
+			if($notif == false){
+				$DB->insert_record('tdb_delete_notifications',$ajout);
+				$notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+			}
+			
+		
+			
+			// Parametre de recherche : l'id du quiz dans la table course_modules
+			$param_quiz = array('id' => $quiz->coursemodule);
+			// On recupere l'enregistrement du quiz dans la table course_modules 
+			if(($quiz_info = $DB->get_records('course_modules',$param_quiz)) == true){			
+				//$debut_restriction = $quiz_info[$quiz->coursemodule]->availablefrom;// Date de debut de restriction	
+				//$fin_restriction = $quiz_info[$quiz->coursemodule]->availableuntil;// Date de fin de restriction
+				// visibilite (1 si visible, 0 si cache)
+				//  ->utile que pour un utilisateur enseignant car pour l'etudiant cette condition 
+				//  est deja utilisee dans la fonction get_all_instances_in_courses
+				$visibilite = $quiz_info[$quiz->coursemodule]->visible;
+				// Si les restrictions empechent l'acces au quizz alors on n'affiche pas de notification
+				if(/*(time() < $debut_restriction) || ($fin_restriction && time() > $fin_restriction) ||*/ !$visibilite){
+					continue;
+				}
+
+			}
+			// Si le quiz est ouvert
+			if ($quiz->timeclose >= $now && $quiz->timeopen < $now ) {
+								
+				
+				$context = context_module::instance($quiz->coursemodule);
+
+				// Si l'utilisateur a le droit de voir les rapports (enseignant)
+				if (has_capability('mod/quiz:viewreports', $context)) {
+					
+					$param_quiz = array('quiz' => $quiz->id);
+					$param_enseignant = array ('userid' => $USER->id,'cmid' => $quiz->coursemodule);
+					$dernier_acces = 0;
+					// Recuperation de la date de dernier acces de l'enseignant (preciser le type d'acces ? view, report...)
+					if(($enseignant_info = $DB->get_records('log',$param_enseignant)) == true){
+						foreach($enseignant_info as $info){
+							if($info->time > $dernier_acces){
+								$dernier_acces = $info->time;
+							}
+						}
+					}
+					
+					$nombre_nouveau_test = 0;
+					
+					if(($quiz_info = $DB->get_records('quiz_attempts',$param_quiz)) == true){
+						foreach($quiz_info as $q){
+							// S'il y a eu un acces au test depuis la suppression de la notification
+							if($dernier_acces >= $notif->time_delete){
+								// Si la tentative a eu lieu depuis ce dernier acces
+								if($q->timefinish > $dernier_acces){
+									$nombre_nouveau_test++;
+								}
+							} else {
+								// Sinon si la tentative a eu lieu apres la suppression de la notification
+								if($q->timefinish > $notif->time_delete){
+									$nombre_nouveau_test++;
+								}
+							}
+						}
+					}
+					
+					// S'il y a au moins une nouvelle tentative on cree la notification
+					if($nombre_nouveau_test > 0){
+						$str = '<div class="quiz overview">' .
+								'<div class="name">' . $strquiz . ': <a ' .
+								($quiz->visible ? '' : ' class="dimmed"') .
+								' href="' . $CFG->wwwroot . '/mod/quiz/view.php?id=' .
+								$quiz->coursemodule . '">' .
+								$quiz->name . '</a></div>';
+						$str .= '<div class="info">' . get_string('quizcloseson', 'block_tableau_bord',
+								userdate($quiz->timeclose)) . '</div>';
+						if($nombre_nouveau_test > 1){
+							$str .= '<div class="info">' .get_string('youhavesomequizzes', 'block_tableau_bord',$nombre_nouveau_test) .'</div>';
+						} else {
+							$str .= '<div class="info">' .get_string('youhaveaquizz', 'block_tableau_bord',$nombre_nouveau_test) .'</div>';
+						}
+						$str .= '</div>'; // div quiz overview
+					}
+				} else if (has_any_capability(array('mod/quiz:reviewmyattempts', 'mod/quiz:attempt'), $context)) { // Etudiant
+					if (isset($USER->id)){
+						$attempts = quiz_get_user_attempts($quiz->id, $USER->id);
+						
+						$nbattempts = count($attempts); // nombre de tentatives
+						// Creation d'une notification si pas encore de tentative et pas supprimee
+						if($nbattempts == 0 && $notif->time_delete == 0 ){
+							// Creation du lien vers le test
+							$str = '<div class="quiz overview">' .
+									'<div class="name">' . $strquiz . ': <a ' .
+									($quiz->visible ? '' : ' class="dimmed"') .
+									' href="' . $CFG->wwwroot . '/mod/quiz/view.php?id=' .
+									$quiz->coursemodule . '">' .
+									$quiz->name . '</a></div>';
+							
+							// Calcul du temps restant
+							$date_limite = $quiz->timeclose; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
+							$date_aujourdhui = $now; //timestamp en secondes
+							$intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
+							$intervalle_formate = format_time($intervalle_secondes); // Intervalle formate en J-H-m...
+							$jours = intval($intervalle_secondes/(3600*24));
+						
+							// Texte en rouge quand urgence ( <7 jours )
+							if($jours < 7){
+								$str .= '<div class="info" style="color:red;">';
+							} else {
+								$str .= '<div class="info">';
+							}
+							// Creation de la notification
+							$str .= 'Temps restant : ' .$intervalle_formate. '</div>';
+							
+							$str .= '<div class="info">' . get_string('quizcloseson', 'quiz', userdate($quiz->timeclose)) . '</div>';
+						
+							$str .= '<div class="info"> ' . $strnoattempts . '</div>';
+							$str .= '</div>';// div quiz overview
+						}
+					}
+				} else {
+					continue;
+				}
+
+				// S'il y a une notification on l'ajoute au tableau
+				if(!empty($str)){
+					if (empty($notification[$quiz->course]['quiz'])) {
+						$notification[$quiz->course]['quiz'] = array();
+						$notification[$quiz->course]['quiz'][$quiz->coursemodule] = $str;
+					} else {
+						$notification[$quiz->course]['quiz'][$quiz->coursemodule] = $str;
+					}
+				}
+			}
+		}
+	}
+}
