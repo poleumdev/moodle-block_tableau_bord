@@ -42,7 +42,7 @@ if ($mform->is_cancelled()) {
     require_once($CFG->dirroot . '/lib/uploadlib.php');
     $fs = get_file_storage();// Recupere les informations pour le stockage de fichiers
     $draftid = file_get_submitted_draft_itemid('image');// Parametre = nom du formulaire. Recupere l'itemid du gestionnaire.
-    $files = $fs->get_area_files(get_context_instance(CONTEXT_USER, $USER->id)->id, 'user', 'draft', $draftid, 'id DESC', false));
+    $files = $fs->get_area_files(get_context_instance(CONTEXT_USER, $USER->id)->id, 'user', 'draft', $draftid, 'id DESC', false);
     $storedfile = reset($files); // Recupere le premier fichier du tableau.
 
     if ($storedfile->is_valid_image()) {
