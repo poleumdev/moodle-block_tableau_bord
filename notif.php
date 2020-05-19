@@ -65,9 +65,9 @@ function creer_notif($courses, &$notification, $mod) {
                 // Parametre de recherche : l'id du devoir dans la table course_modules.
                 $paramdevoir = array('id' => $assignment->coursemodule);
                 // On recupere l'enregistrement du devoir dans la table course_modules.
-                if (($devoir_info = $DB->get_records('course_modules', $paramdevoir)) == true) {
+                if (($devoirinfo = $DB->get_records('course_modules', $paramdevoir)) == true) {
                     // Visibilite (1 si visible, 0 si cache).
-                    $visibilite = $devoir_info[$assignment->coursemodule]->visible;
+                    $visibilite = $devoirinfo[$assignment->coursemodule]->visible;
                 }
 
                 if ($visibilite) {
@@ -183,7 +183,7 @@ function creer_notif($courses, &$notification, $mod) {
                            format_string($assignment->name) .
                            '</a></div>';
 
-                    $urlparams = array('id'=>$assignment->coursemodule, 'action' => 'grading');
+                    $urlparams = array('id' => $assignment->coursemodule, 'action' => 'grading');
                     $url = new moodle_url('/mod/assign/view.php', $urlparams);
                     $str .= '<div class="details">' .
                             '<a href="' . $url . '">' .
@@ -220,10 +220,10 @@ function creer_notif($courses, &$notification, $mod) {
                 // Calcul de l'intervalle de temps qui reste avant la date de remise.
                 // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture).
                 $datelimite = $assignmentdate[$assignment->id];
-                $date_aujourdhui = intval(time()); //timestamp en secondes
-                $intervalle_secondes = intval($datelimite - $date_aujourdhui); // intervalle en secondes
-                $intervalle_formate = format_time($intervalle_secondes); // Formate un temps en secondes en un temps en M-J-H-m
-                $jours = intval($intervalle_secondes/(3600*24));
+                $aujourdhui = intval(time());
+                $intervallesecondes = intval($datelimite - $aujourdhui);
+                $intervalle_formate = format_time($intervallesecondes); // Formate un temps en secondes en un temps en M-J-H-m.
+                $jours = intval($intervallesecondes / (3600 * 24));
 
                 // Texte en rouge quand urgence ( <7 jours).
                 if ($jours < 7) {
@@ -352,8 +352,8 @@ function creer_notif($courses, &$notification, $mod) {
                 // Parametre de recherche : l'id du forum dans la table course_modules
                 $parametre_forum = array('id' => $forum->coursemodule);
                 // On recupere l'enregistrement du forum dans la table course_modules
-                if(($forum_info = $DB->get_records('course_modules',$parametre_forum)) == true){
-                    $visibilite = $forum_info[$forum->coursemodule]->visible;
+                if(($foruminfo = $DB->get_records('course_modules',$parametre_forum)) == true){
+                    $visibilite = $foruminfo[$forum->coursemodule]->visible;
                 }
 
                 // Si le forum n'est pas cache et que la disponibilite du forum n'est pas restreinte on cree la notification.
@@ -662,10 +662,10 @@ function creer_notif($courses, &$notification, $mod) {
 
                             // Calcul du temps restant.
                             $datelimite = $quiz->timeclose; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
-                            $date_aujourdhui = $now; // Timestamp en secondes.
-                            $intervalle_secondes = intval($datelimite - $date_aujourdhui); // intervalle en secondes
-                            $intervalle_formate = format_time($intervalle_secondes); // Intervalle formate en J-H-m...
-                            $jours = intval($intervalle_secondes/(3600*24));
+                            $aujourdhui = $now; // Timestamp en secondes.
+                            $intervallesecondes = intval($datelimite - $aujourdhui);
+                            $intervalle_formate = format_time($intervallesecondes); // Intervalle formate en J-H-m.
+                            $jours = intval($intervallesecondes / (3600 * 24));
 
                             // Texte en rouge quand urgence ( <7 jours )
                             if($jours < 7){
