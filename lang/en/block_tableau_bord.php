@@ -21,11 +21,10 @@
  * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 // Pour le gestionnaire de fichier mais c'est pas de l'anglais !!!
 $string['addimage'] = 'Ajouter des images';
 $string['addimage_help'] = 'Naviguez vers une image sur votre machine locale pour l\'ajouter à la gallerie en cours.';
-
 
 $string['activityoverview'] = 'You have {$a}s that need attention';
 $string['alwaysshowall'] = 'Always Show All';
@@ -94,14 +93,10 @@ $string['modulenamequiz'] = 'Quiz';
 $string['noattempts'] = 'No attempts have been made on this quiz';
 $string['quizcloseson'] = 'This quiz will close at {$a}';
 
-
-
-
 $string['studentprogress'] = 'Progress';
 $string['teacherprogress'] = 'Average Progress';
 $string['seeprogress'] = 'See more details about progress';
 $string['seeprogressteacher'] = 'See more details about progress';
-
 
 $string['youhaveanotification'] = 'You have 1 new notification';
 $string['youhavesomenotifications'] = 'You have {$a} new notifications';
@@ -111,7 +106,6 @@ $string['changedisplay'] = 'Change display';
 $string['noprogress'] = 'No details for progress in this course';
 $string['youhavesomequizzes'] = '{$a} new retries not seen';
 $string['youhaveaquizz'] = '1 new retries not seen';
-
 
 $string['studentglobalprogress'] = 'Global progress';
 $string['studentglobalprogress_help'] = 'zadfzfeff';

@@ -21,7 +21,7 @@
  * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 // Pour le gestionnaire de fichier mais c'est pas de l'anglais !!!
 $string['addimage'] = 'Ajouter des images';
 $string['addimage_help'] = 'Naviguez vers une image sur votre machine locale pour l\'ajouter à la gallerie en cours.';
@@ -89,17 +89,16 @@ $string['studentdetailedprogress'] = 'Avancement détaillé';
 $string['studentdetailedprogress_help'] = 'Graphes donnant des indications concernant votre pourcentage d\'avancement dans différents types d\'activités ainsi que le nombre d\'activités restantes pour chaque type';
 
 $string['teacherdetailedprogress'] = 'Avancement détaillé';
-$string['teacherdetailedprogress_help'] = 'Histogramme permettant d\'analyser la répartition des étudiants dans le cours selon leur avancement. 
-											En abscisse : le pourcentage d\'avancement. En ordonnée : le nombre d\'étudiants.';
-											
-										
+$string['teacherdetailedprogress_help'] = 'Histogramme permettant d\'analyser la répartition des étudiants dans le cours selon leur avancement.
+                                           En abscisse : le pourcentage d\'avancement. En ordonnée : le nombre d\'étudiants.';
+
 $string['notifications'] = 'Notifications';
 $string['notifications_help'] = 'Liste de notifications indiquant des nouveautés ou des échéances dans le cours. Elles peuvent être supprimées en cliquant sur la croix rouge. Sinon elles disparaissent automatiquement lorsque vous avez réalisé l\'activité ou que celle-ci est fermée';
 
 $string['changeorder'] = 'Modifier l\'ordre des cours';
 $string['validorder'] = 'Valider l\'ordre des cours';
 
-// Avancement detaille etudiant
+// Avancement detaille etudiant.
 $string['assign'] = 'Devoir';
 $string['resource'] = 'Ressource';
 $string['otheractivity'] = 'Autre activité';
@@ -112,7 +111,7 @@ $string['someactivityremaining'] = '{$a} Restants';
 $string['oneactivityfeminineremaining'] = '{$a} Restante';
 $string['someactivityfeminineremaining'] = '{$a} Restantes';
 
-// Devoir
+// Devoir.
 $string['duedate'] = 'À remettre jusqu\'au';
 $string['nosubmissionsacceptedafter'] = 'Aucun devoir accepté après';
 $string['nolatesubmissions'] = 'Aucun devoir en retard accepté';
@@ -125,11 +124,11 @@ $string['modulenameassign'] = 'Devoir';
 $string['reviewed'] = 'Relu';
 $string['submissionsnotgraded'] = 'Travaux non évalués {$a}';
 
-// Forum
+// Forum.
 $string['modulenameforum'] = 'Forum';
 $string['overviewnumpostssince'] = '{$a} messages depuis la dernière connexion';
 
-// Test
+// Test.
 $string['modulenamequiz'] = 'Test';
 $string['noattempts'] = 'Aucune tentative n\'a été réalisée sur ce test';
 $string['quizcloseson'] = 'Ce test sera fermé le {$a}';
@@ -139,5 +138,5 @@ $string['activityoverviewassign'] = 'Vous avez des devoirs qui requièrent votre
 $string['activityoverviewforum'] = 'Il y a de nouveaux messages de forum';
 $string['activityoverviewquiz'] = 'Vous avez des tests qui requièrent votre attention';
 
-$string['modulenamejournal'] = "journal";
+$string['modulenamejournal'] = 'journal';
 $string['activityoverviewjournal'] = 'Vous avez des journaux qui requièrent votre attention';

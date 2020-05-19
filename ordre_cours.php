@@ -1,17 +1,33 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once(dirname(__FILE__) . '/locallib.php');
 global $CFG;
-// Si l'utilisateur a clique sur le bouton on active le drag and drop
+
+// Si l'utilisateur a clique sur le bouton on active le drag and drop.
 if ( isset($_POST['ordre_cours']) && !empty($_POST['ordre_cours']) ) {
-	mode_edition_cours();
-	header("Location: ".$CFG->wwwroot.'/my');
-}	
-// Si l'utilisateur a clique sur le bouton valider alors on quitte le mode edition
+    mode_edition_cours();
+    header("Location: ".$CFG->wwwroot.'/my');
+}
+// Si l'utilisateur a clique sur le bouton valider alors on quitte le mode edition.
 elseif( isset($_POST['valider']) && !empty($_POST['valider'])){
-	quitter_edition_cours();
-	header("Location: ".$CFG->wwwroot.'/my');
+    quitter_edition_cours();
+    header("Location: ".$CFG->wwwroot.'/my');
 } else {
-	header("Location: ".$CFG->wwwroot.'/my');
+    header("Location: ".$CFG->wwwroot.'/my');
 }
 ?>

@@ -28,7 +28,6 @@
  * @param array $courses courses for which overview needs to be shown
  * @return array html overview
  */
- 
 
 function block_tableau_bord_get_overviews($courses) {
     $notification = array();
@@ -39,16 +38,15 @@ function block_tableau_bord_get_overviews($courses) {
             $batches = array($courses);
         }
 
-		// Pour chaque cours
+        // Pour chaque cours
         foreach ($batches as $courses) {
-			// Pour chaque type d'activite existante on recherche si le cours necessite des notifications
+            // Pour chaque type d'activite existante on recherche si le cours necessite des notifications
             foreach ($modules as $mod=>$fname) {
-				// ajoute les notifications dans le tableau $notification
-				creer_notif($courses,$notification,$mod);
+                // ajoute les notifications dans le tableau $notification
+                creer_notif($courses,$notification,$mod);
             }
         }
     }
-
     return $notification;
 }
 
@@ -119,7 +117,6 @@ function block_tableau_bord_get_child_shortnames($courseid) {
  */
 function block_tableau_bord_get_max_user_courses() {
     // Get block configuration
-	global $CFG;
     $config = get_config('block_tableau_bord');
     $limit = $config->defaultmaxcourses;
 
@@ -134,8 +131,7 @@ function block_tableau_bord_get_max_user_courses() {
  * Return sorted list of user courses
  *
  * @return array list of sorted courses and count of courses.
- 
-	Renvoi la liste des cours dans l'ordre defini par les preferences de l'utilisateur ($USER->preferences)
+ * Renvoi la liste des cours dans l'ordre defini par les preferences de l'utilisateur ($USER->preferences)
  */
 function block_tableau_bord_get_sorted_courses() {
     global $USER;
@@ -173,7 +169,7 @@ function block_tableau_bord_get_sorted_courses() {
     if (!is_null($usersortorder = get_user_preferences('tableau_bord_course_order'))) {
         $order = unserialize($usersortorder);
     }
-	
+
     $sortedcourses = array();
     $counter = 0;
     // Get courses in sort order into list.
@@ -181,7 +177,7 @@ function block_tableau_bord_get_sorted_courses() {
         if (($counter >= $limit) && ($limit != 0)) {
             break;
         }
-		
+
         // Make sure user is still enroled.
         if (isset($courses[$cid])) {
             $sortedcourses[$cid] = $courses[$cid];
@@ -209,12 +205,11 @@ function block_tableau_bord_get_sorted_courses() {
     }
     return array($sortedcourses, $sitecourses, count($courses));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Tri les cours par ordre alphabetique
 function block_tableau_bord_get_sorted_courses_alphabetique() {
     global $USER;
-	
+
     $limit = block_tableau_bord_get_max_user_courses();
 
     $courses = enrol_get_my_courses('id, shortname, fullname, modinfo, sectioncache');
@@ -249,38 +244,37 @@ function block_tableau_bord_get_sorted_courses_alphabetique() {
         $order = unserialize($usersortorder);
     }
 
-	function comparer_cours($a, $b){
-		return $a->fullname > $b->fullname;
-	}
+    function comparer_cours($a, $b) {
+        return $a->fullname > $b->fullname;
+    }
 
-	// Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours
-	$test = usort($courses, 'comparer_cours');
-	$ind = -1;
+    // Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours
+    $test = usort($courses, 'comparer_cours');
+    $ind = -1;
     $sitecourses = array();
     foreach ($courses as $key => $course) {
         if ($course->id > 0) {
-			$ind++;
+            $ind++;
             $courses[$key] = $course;
-			// Fabrique le tableau d'ordre des cours present dans $USER->preferences
-			$tmp = intval($course->id);
-			$order[$ind] = $tmp;
-			
+            // Fabrique le tableau d'ordre des cours present dans $USER->preferences
+            $tmp = intval($course->id);
+            $order[$ind] = $tmp;
         }
     }
-	
-	// Applique le nouveau changement aux preferences de l'utilisateur
-	block_tableau_bord_update_myorder($order);
+
+    // Applique le nouveau changement aux preferences de l'utilisateur
+    block_tableau_bord_update_myorder($order);
 }
 
 // Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop
 function mode_edition_cours(){
-	global $USER;
-	// Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree)
-	$USER->userediting_course = true;
+    global $USER;
+    // Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree)
+    $USER->userediting_course = true;
 }
 
 function quitter_edition_cours(){
-	global $USER;
-	// Passe la variable d'edition a faux
-	$USER->userediting_course = false;
+    global $USER;
+    // Passe la variable d'edition a faux
+    $USER->userediting_course = false;
 }
