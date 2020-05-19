@@ -45,12 +45,12 @@ function creer_notif($courses, &$notification, $mod) {
             // On ajoute ce devoir a la table s'il n'y est pas encore present.
             if ($notif == false) {
                 // On l'ajoute a la table.
-                $DB->insert_record('tdb_delete_notifications',$ajout);
+                $DB->insert_record('tdb_delete_notifications', $ajout);
             }
 
             $time = time();
-            $est_ouvert = false;
-            $date_limite = false;
+            $estouvert = false;
+            $datelimite = false;
             // S'il y a une date "a remettre jusqu'au" et/ou une date limite de rendu.
             if ($assignment->duedate || $assignment->cutoffdate) {
                 $cutoffdate = false;
@@ -63,28 +63,28 @@ function creer_notif($courses, &$notification, $mod) {
                 }
 
                 // Parametre de recherche : l'id du devoir dans la table course_modules.
-                $parametre_devoir = array('id' => $assignment->coursemodule);
+                $paramdevoir = array('id' => $assignment->coursemodule);
                 // On recupere l'enregistrement du devoir dans la table course_modules.
-                if(($devoir_info = $DB->get_records('course_modules',$parametre_devoir)) == true){
-                    // visibilite (1 si visible, 0 si cache).
+                if (($devoir_info = $DB->get_records('course_modules', $paramdevoir)) == true) {
+                    // Visibilite (1 si visible, 0 si cache).
                     $visibilite = $devoir_info[$assignment->coursemodule]->visible;
                 }
 
                 if ($visibilite) {
                     // S'il y a une date "a remettre jusqu'au".
                     if ($duedate) {
-                        $est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate);
-                        $date_limite = intval($assignment->duedate); // Timestamp en secondes.
+                        $estouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $duedate);
+                        $datelimite = intval($assignment->duedate); // Timestamp en secondes.
                     } else if ($cutoffdate) { // Sinon s'il y a une date limite.
-                        $est_ouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $cutoffdate);
-                        $date_limite = intval($assignment->cutoffdate); // Timestamp en secondes.
+                        $estouvert = ($assignment->allowsubmissionsfromdate <= $time && $time <= $cutoffdate);
+                        $datelimite = intval($assignment->cutoffdate); // Timestamp en secondes.
                     }
                 }
             }
             // Si les conditions d'affichage de la notifications sont respectees alors on ajoute le devoir aux tableaux.
-            if($est_ouvert) {
+            if ($estouvert) {
                 $assignmentids[] = $assignment->id; // Tableau contenant les id des devoirs.
-                $assignmentdate[$assignment->id] = $date_limite; // Tableau contenant la date limite d'affichage pour chaque devoir
+                $assignmentdate[$assignment->id] = $datelimite; // Tableau contenant la date limite d'affichage pour chaque devoir.
             }
         }
 
@@ -130,7 +130,7 @@ function creer_notif($courses, &$notification, $mod) {
             // Lien vers le devoir.
             $href = $CFG->wwwroot . '/mod/assign/view.php?id=' . $assignment->coursemodule;
 
-            $str=""; // Contient le code html de la notification.
+            $str = ""; // Contient le code html de la notification.
 
             $context = context_module::instance($assignment->coursemodule);
 
@@ -183,24 +183,23 @@ function creer_notif($courses, &$notification, $mod) {
                            format_string($assignment->name) .
                            '</a></div>';
 
-
-                    $urlparams = array('id'=>$assignment->coursemodule, 'action'=>'grading');
+                    $urlparams = array('id'=>$assignment->coursemodule, 'action' => 'grading');
                     $url = new moodle_url('/mod/assign/view.php', $urlparams);
                     $str .= '<div class="details">' .
                             '<a href="' . $url . '">' .
                             get_string('submissionsnotgraded', 'block_tableau_bord', $submissions) .
                             '</a></div>';
-                    $str .= '</div>'; // division assign overview.
+                    $str .= '</div>';
                 }
             }
             // Si l'utilisateur a le droit de soumettre un devoir (etudiant).
             if (has_capability('mod/assign:submit', $context)) {
                 // Recuperation de l'etat du devoir de l'utilisateur.
-                $parametre_devoir = array('userid' => $USER->id,'assignment' => $assignment->id );
-                $devoir_rendu = $DB->get_record('assign_submission', $parametre_devoir);
+                $paramdevoir = array('userid' => $USER->id, 'assignment' => $assignment->id );
+                $devoirrendu = $DB->get_record('assign_submission', $paramdevoir);
                 // Si l'utilisateur a rendu un devoir on n'affiche pas de notification.
-                if ($devoir_rendu != null) {
-                    if ($devoir_rendu->status == "submitted") {
+                if ($devoirrendu != null) {
+                    if ($devoirrendu->status == "submitted") {
                         continue;
                     }
                 }
@@ -218,12 +217,11 @@ function creer_notif($courses, &$notification, $mod) {
                        format_string($assignment->name) .
                        '</a></div>';
 
-
                 // Calcul de l'intervalle de temps qui reste avant la date de remise.
                 // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture).
-                $date_limite = $assignmentdate[$assignment->id];
+                $datelimite = $assignmentdate[$assignment->id];
                 $date_aujourdhui = intval(time()); //timestamp en secondes
-                $intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
+                $intervalle_secondes = intval($datelimite - $date_aujourdhui); // intervalle en secondes
                 $intervalle_formate = format_time($intervalle_secondes); // Formate un temps en secondes en un temps en M-J-H-m
                 $jours = intval($intervalle_secondes/(3600*24));
 
@@ -651,8 +649,8 @@ function creer_notif($courses, &$notification, $mod) {
                     if (isset($USER->id)){
                         $attempts = quiz_get_user_attempts($quiz->id, $USER->id);
 
-                        $nbattempts = count($attempts); // nombre de tentatives
-                        // Creation d'une notification si pas encore de tentative et pas supprimee
+                        $nbattempts = count($attempts); // Nombre de tentatives.
+                        // Creation d'une notification si pas encore de tentative et pas supprimee.
                         if($nbattempts == 0 && $notif->time_delete == 0 ){
                             // Creation du lien vers le test
                             $str = '<div class="quiz overview">' .
@@ -662,10 +660,10 @@ function creer_notif($courses, &$notification, $mod) {
                                     $quiz->coursemodule . '">' .
                                     $quiz->name . '</a></div>';
 
-                            // Calcul du temps restant
-                            $date_limite = $quiz->timeclose; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
-                            $date_aujourdhui = $now; //timestamp en secondes
-                            $intervalle_secondes = intval($date_limite - $date_aujourdhui); // intervalle en secondes
+                            // Calcul du temps restant.
+                            $datelimite = $quiz->timeclose; // Recuperation de la date limite (date de rendu en priorite sinon date limite d'ouverture)
+                            $date_aujourdhui = $now; // Timestamp en secondes.
+                            $intervalle_secondes = intval($datelimite - $date_aujourdhui); // intervalle en secondes
                             $intervalle_formate = format_time($intervalle_secondes); // Intervalle formate en J-H-m...
                             $jours = intval($intervalle_secondes/(3600*24));
 
