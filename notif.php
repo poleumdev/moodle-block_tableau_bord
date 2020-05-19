@@ -40,8 +40,8 @@ function creer_notif($courses, &$notification, $mod) {
             $ajout->id_course_module = $assignment->coursemodule;
             $ajout->time_delete = '0';
 
-            $parametre_notif = array('id_user' => $USER->id, 'id_course_module' => $assignment->coursemodule );
-            $notif = $DB->get_record('tdb_delete_notifications', $parametre_notif);
+            $paramnotif = array('id_user' => $USER->id, 'id_course_module' => $assignment->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             // On ajoute ce devoir a la table s'il n'y est pas encore present.
             if ($notif == false) {
                 // On l'ajoute a la table.
@@ -119,8 +119,8 @@ function creer_notif($courses, &$notification, $mod) {
             }
 
             // Recuperation des informations du devoir dans la table 'delete_notif'.
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $assignment->coursemodule );
-            $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+            $paramnotif = array('id_user' => $USER->id, 'id_course_module' => $assignment->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
 
             $dimmedclass = '';
             if (!$assignment->visible) {
@@ -304,15 +304,15 @@ function creer_notif($courses, &$notification, $mod) {
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $forum->coursemodule;
             $ajout->time_delete = '0';
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $forum->coursemodule );
-            $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+            $paramnotif = array('id_user' => $USER->id, 'id_course_module' => $forum->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
 
             // Si ce forum n'est pas presente alors on l'ajoute a la table.
             if($notif == false){
                 //On l'ajoute a la table.
                 $DB->insert_record('tdb_delete_notifications',$ajout);
                 // On la recupere.
-                $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+                $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             }
 
             // Remise a zero des parametres de recherche de nouveaux messages.
@@ -406,54 +406,54 @@ function creer_notif($courses, &$notification, $mod) {
         $params = array();
         $timenow = time();
         foreach ($journals as $journal) {
-            // Ajoute le journal a la table qui contient les informations concernant la suppression des notifications
+            // Ajoute le journal a la table qui contient les informations concernant la suppression des notifications.
             $ajout = new stdClass();
             $ajout->id_user = $USER->id;
             $ajout->id_course_module = $journal->coursemodule;
             $ajout->time_delete = '0';
 
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $journal->coursemodule );
-            $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
-            // On ajoute ce journal a la table s'il n'y est pas encore present
+            $paramnotif = array('id_user' => $USER->id,'id_course_module' => $journal->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
+            // On ajoute ce journal a la table s'il n'y est pas encore present.
             if($notif == false){
                 $DB->insert_record('tdb_delete_notifications',$ajout);
-                $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+                $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             }
 
             $courses[$journal->course]->format = $DB->get_field('course', 'format', array('id' => $journal->course));
-            // Si le cours a pour format "weeks" et que le journal a une duree limitee alors on regarde s'il est toujours ouvert
-            // Sinon il l'est toujours
+            // Si le cours a pour format "weeks" et que le journal a une duree limitee alors on regarde s'il est toujours ouvert.
+            // Sinon il l'est toujours.
             if ($courses[$journal->course]->format == 'weeks' AND $journal->days) {
                 // Date de debut du cours
                 $coursestartdate = $courses[$journal->course]->startdate;
                 // Date de debut du journal -> correspond a la date du debut de la section (= date de debut du cours +
-                //  un nombre de semaine egal au numero de section)
+                //  un nombre de semaine egal au numero de section).
                 $journal->timestart  = $coursestartdate + (($journal->section - 1) * 608400);
                 $journal->timefinish = 9999999999;
                 if (!empty($journal->days)) {
                     $journal->timefinish = $journal->timestart + (3600 * 24 * $journal->days);
                 }
 
-                // Parametre de recherche : l'id du journal dans la table course_modules
-                $parametre_journal = array('id' => $journal->coursemodule);
-                // On recupere l'enregistrement du journal dans la table course_modules
-                if(($journal_info = $DB->get_records('course_modules',$parametre_journal)) == true){
-                    // visibilite (1 si visible, 0 si cache)
+                // Parametre de recherche : l'id du journal dans la table course_modules.
+                $paramejournal = array('id' => $journal->coursemodule);
+                // On recupere l'enregistrement du journal dans la table course_modules.
+                if(($journal_info = $DB->get_records('course_modules', $paramejournal)) == true){
+                    // visibilite (1 si visible, 0 si cache).
                     $visibilite = $journal_info[$journal->coursemodule]->visible;
                 }
 
-                // Si le journal n'est pas cache
+                // Si le journal n'est pas cache.
                 // (inutile dans le cas ou l'utilisateur est un etudiant
-                //  car la fonction 'get_all_instances_in_courses' ne lui retourne pas les journaux caches)
+                //  car la fonction 'get_all_instances_in_courses' ne lui retourne pas les journaux caches).
                 if ($visible) {
-                    // S'il a une date de fin de restriction
+                    // S'il a une date de fin de restriction.
                     $journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish);
                 }
             } else {
                 $journalopen = true;
             }
 
-            // Parametres pour rechercher les infos de l'utilisateur concernant le journal
+            // Parametres pour rechercher les infos de l'utilisateur concernant le journal.
             $param_utilisateur = array ('userid' => $USER->id,'cmid' => $journal->coursemodule);
             $date_dernier_acces = 0;
             // Recuperation de la date de dernier acces de l'utilisateur
@@ -573,12 +573,12 @@ function creer_notif($courses, &$notification, $mod) {
             $ajout->id_course_module = $quiz->coursemodule;
             $ajout->time_delete = '0';
 
-            $parametre_notif = array('id_user' => $USER->id,'id_course_module' => $quiz->coursemodule );
-            $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+            $paramnotif = array('id_user' => $USER->id, 'id_course_module' => $quiz->coursemodule );
+            $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             // On ajoute ce test a la table s'il n'y est pas encore present
             if($notif == false){
                 $DB->insert_record('tdb_delete_notifications',$ajout);
-                $notif = $DB->get_record('tdb_delete_notifications',$parametre_notif);
+                $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             }
 
             // Parametre de recherche : l'id du quiz dans la table course_modules

@@ -31,7 +31,7 @@ require_once($CFG->dirroot.'/lib/completionlib.php');
 /**
  * tableau_bord block rendrer
  *
- * @copyright  2020 PRN 
+ * @copyright  2020 PRN
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_tableau_bord_renderer extends plugin_renderer_base {
@@ -134,7 +134,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 if (empty($course->visible)) {
                     $attributes['class'] = 'dimmed';
                 }
-                $coursefullname = format_string($course->fullname, true, $course->id); //on peut mettre fullname/shortname.
+                $coursefullname = format_string($course->fullname, true, $course->id);
                 $html .= $coursefullname;
             } else {
                 $html .= $this->output->heading(
@@ -146,10 +146,10 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                                         . ' (' . format_string($course->hostname) . ')', 2, 'title');
             }
 
-            $html .= html_writer::end_tag('div'); // course_title (?)
+            $html .= html_writer::end_tag('div');
 
             // RECUPERER  AVANCEMENT.
-            // Recuperation du role de l'utilisateur dans le cours ainsi que  les informations concernant les activites du cours
+            // Recuperation du role de l'utilisateur dans le cours ainsi que  les informations concernant les activites du cours.
             $context = context_course::instance($course->id, true);
             $roles = array();
             $roles = get_user_roles($context, $USER->id, true); // Retourne les roles de l'utilisateur pour le cours courant.
@@ -159,11 +159,11 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $nb_act = count($activities);
 
             $avancementGlobal = "";
-            $avancementDetaille ="";
+            $avancementDetaille = "";
             $roleUtilisateur = "";
             // Si l'utilisateur connecté avec un role dans le cours et qu'il y a au moins une activite dans le suivi d'achevement
             if ($nb_act > 0) {
-                foreach($roles as $role){ // Recuperation du role qui nous intéresse !
+                foreach ($roles as $role) { // Recuperation du role qui nous intéresse !
                     if (strcmp($role->shortname, "teacher" ) == 0 || strcmp($role->shortname, "editingteacher" ) == 0 ) {
                         $roleUtilisateur = "teacher";
                         break;
@@ -171,38 +171,38 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                         $roleUtilisateur = "student";
                     }
                 }
-            } 
+            }
 
-            // Recupere ce qui permet d'afficher le suivi d'avancement selon le role de l'utilisateur dans ce cours
+            // Recupere ce qui permet d'afficher le suivi d'avancement selon le role de l'utilisateur dans ce cours.
             if ($roleUtilisateur == "teacher" ) {
-                // Recupere les deux types d'avancement dans deux variables differentes
-                list($avancementGlobal, $avancementDetaille) = $this->afficherAvtProf($course); 
-            } elseif ($roleUtilisateur == "student") {
-                // Recupere les deux types d'avancement dans deux variables differentes
+                // Recupere les deux types d'avancement dans deux variables differentes.
+                list($avancementGlobal, $avancementDetaille) = $this->afficherAvtProf($course);
+            } else if ($roleUtilisateur == "student") {
+                // Recupere les deux types d'avancement dans deux variables differentes.
                 list($avancementGlobal, $avancementDetaille) = $this->afficherAvtEtu($course);
             }
 
-            // Affiche l'avancement global s'il existe
+            // Affiche l'avancement global s'il existe.
             $html.= '<div class="cours-avancement-global">';
             if ($avancementGlobal !== "") {
                 $html .= $avancementGlobal;
-                $html .='<div class="clear"></div>';
+                $html .= '<div class="clear"></div>';
             }
-            $html .= html_writer::end_tag('div'); 
+            $html .= html_writer::end_tag('div');
 
             // AFFICHER AVANCEMENT  DETAILLE & NOTIFICATIONS.
-            $html.= '<div class="cours-infos">';
+            $html .= '<div class="cours-infos">';
 
-            // avancement ou si acucune activité. 
+            // Avancement ou si acucune activité.
             if ($nb_act > 0) {
                 $html .= $avancementDetaille;
             }
 
-            // Notification : 
+            // Notification :
             if (isset($overviews[$course->id])) {
                 $html .= $this->afficher_notification($course, $overviews);
             }
-            $html .= html_writer::end_tag('div'); // fin de cours-infos
+            $html .= html_writer::end_tag('div'); // Fin de cours-infos.
 
             if (!empty($config->showchildren) && ($course->id > 0)) {
                 // List children here.
@@ -214,9 +214,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $courseordernumber++;
             // Bouton pour acceder au cours.
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
-            $html .= '<div class="course-button"><a href="'.$courseurl.'">' .get_string('reach','block_tableau_bord').' </a></div>';
-            $html .='<div class="clear"></div>'; 
-            $html .= $this->output->box_end(); // Fin du coursebox
+            $html .= '<div class="course-button"><a href="'.$courseurl.'">' .get_string('reach', 'block_tableau_bord').' </a></div>';
+            $html .='<div class="clear"></div>';
+            $html .= $this->output->box_end(); // Fin du coursebox.
         }
         return html_writer::tag('div', $html, array('class' => 'course_list', 'id' => 'test'));
     }
@@ -444,13 +444,13 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         $id_canvas_histo = "canvasHisto".$course->id;
         $id_canvas_global = "affichage-global-cours-".$course->id;
- 
+
         $histogramme =""; // Contient le code html permettant d'afficher l'histogramme.
         // Creation du canvas pour l'histo et des variable JS a passer en parametre de la fonction JS qui creera l'histo
         $histogramme .= '<canvas id="'.$id_canvas_histo.'"  width="450"></canvas>'.
                         '<script type="text/javascript">
                           var canvasHisto = "'.$id_canvas_histo.'";
-                          var tableauHisto = new Array();';   
+                          var tableauHisto = new Array();';
         for ($i = 0; $i < count($tableau_histo); $i++) { // Rempli le tableau javascript a l'aide du tableau php
             $histogramme .= "tableauHisto[".$i."] = " . $tableau_histo[$i] . ";";
         }
@@ -477,7 +477,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                     . $OUTPUT->help_icon('teacherglobalprogress','block_tableau_bord').'</center>';
 
         // Contient l'histogramme dans une menu deroulant
-        $avancement_detaille .= $this->collapsible_region($histogramme, '', 'region_histo_'.$course->id, 
+        $avancement_detaille .= $this->collapsible_region($histogramme, '', 'region_histo_'.$course->id,
                     '<img src="'. $OUTPUT->image_url('avancement_18', 'block_tableau_bord').'" alt="Avancement icon" /> '.
                     '<b>'.get_string('seeprogressteacher','block_tableau_bord').'</b>', '', true);
         // Retourne les deux types d'avancement separement
@@ -491,7 +491,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         $completion = new completion_info($course);
 
-        // TOUTES les infos de toutes les activites faisant partie du suivi d'achevement 
+        // TOUTES les infos de toutes les activites faisant partie du suivi d'achevement
         $activities = $completion->get_activities();
         $nb_act = count($activities); // Nombre total d'activites
 
@@ -660,7 +660,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                         creerPieDetaille(canvas_autre, pourcentage_autre_acheve_'.$course->id.', pourcentage_autre_non_acheve_'.$course->id.');
                         </script>';
         }
-        // info bulle à la fin : 
+        // info bulle à la fin :
         $avancement_activite .= $OUTPUT->help_icon('studentdetailedprogress','block_tableau_bord');
 
         // Cree le diagramme d'avancement global
