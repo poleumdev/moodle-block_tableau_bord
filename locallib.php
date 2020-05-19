@@ -31,19 +31,19 @@
 
 function block_tableau_bord_get_overviews($courses) {
     $notification = array();
-    if ($modules=get_plugin_list('mod')) {
+    if ($modules = get_plugin_list('mod')) {
         if (defined('MAX_MODINFO_CACHE_SIZE') && MAX_MODINFO_CACHE_SIZE > 0 && count($courses) > MAX_MODINFO_CACHE_SIZE) {
             $batches = array_chunk($courses, MAX_MODINFO_CACHE_SIZE, true);
         } else {
             $batches = array($courses);
         }
 
-        // Pour chaque cours
+        // Pour chaque cours.
         foreach ($batches as $courses) {
-            // Pour chaque type d'activite existante on recherche si le cours necessite des notifications
-            foreach ($modules as $mod=>$fname) {
-                // ajoute les notifications dans le tableau $notification
-                creer_notif($courses,$notification,$mod);
+            // Pour chaque type d'activite existante on recherche si le cours necessite des notifications.
+            foreach ($modules as $mod => $fname) {
+                // Ajoute les notifications dans le tableau $notification.
+                creer_notif($courses, $notification, $mod);
             }
         }
     }
@@ -116,11 +116,11 @@ function block_tableau_bord_get_child_shortnames($courseid) {
  * @return int maximum number of courses
  */
 function block_tableau_bord_get_max_user_courses() {
-    // Get block configuration
+    // Get block configuration.
     $config = get_config('block_tableau_bord');
     $limit = $config->defaultmaxcourses;
 
-    // If max course is not set then try get user preference
+    // If max course is not set then try get user preference.
     if (empty($config->forcedefaultmaxcourses)) {
         $limit = get_user_preferences('tableau_bord_number_of_courses', $limit);
     }
@@ -141,7 +141,7 @@ function block_tableau_bord_get_sorted_courses() {
     $courses = enrol_get_my_courses();
     $site = get_site();
 
-    if (array_key_exists($site->id,$courses)) {
+    if (array_key_exists($site->id, $courses)) {
         unset($courses[$site->id]);
     }
 
@@ -158,7 +158,7 @@ function block_tableau_bord_get_sorted_courses() {
     if (is_enabled_auth('mnet')) {
         $remotecourses = get_my_remotecourses();
     }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
+    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
     foreach ($remotecourses as $id => $val) {
         $remoteid = $val->remoteid * -1;
         $val->id = $remoteid;
@@ -185,7 +185,7 @@ function block_tableau_bord_get_sorted_courses() {
         }
     }
 
-    // Append unsorted courses if limit allows
+    // Append unsorted courses if limit allows.
     foreach ($courses as $c) {
         if (($limit != 0) && ($counter >= $limit)) {
             break;
@@ -196,7 +196,7 @@ function block_tableau_bord_get_sorted_courses() {
         }
     }
 
-    // From list extract site courses for overview
+    // From list extract site courses for overview.
     $sitecourses = array();
     foreach ($sortedcourses as $key => $course) {
         if ($course->id > 0) {
@@ -206,7 +206,7 @@ function block_tableau_bord_get_sorted_courses() {
     return array($sortedcourses, $sitecourses, count($courses));
 }
 
-// Tri les cours par ordre alphabetique
+// Tri les cours par ordre alphabetique.
 function block_tableau_bord_get_sorted_courses_alphabetique() {
     global $USER;
 
@@ -215,7 +215,7 @@ function block_tableau_bord_get_sorted_courses_alphabetique() {
     $courses = enrol_get_my_courses('id, shortname, fullname, modinfo, sectioncache');
     $site = get_site();
 
-    if (array_key_exists($site->id,$courses)) {
+    if (array_key_exists($site->id, $courses)) {
         unset($courses[$site->id]);
     }
 
@@ -232,7 +232,7 @@ function block_tableau_bord_get_sorted_courses_alphabetique() {
     if (is_enabled_auth('mnet')) {
         $remotecourses = get_my_remotecourses();
     }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
+    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
     foreach ($remotecourses as $id => $val) {
         $remoteid = $val->remoteid * -1;
         $val->id = $remoteid;
@@ -248,7 +248,7 @@ function block_tableau_bord_get_sorted_courses_alphabetique() {
         return $a->fullname > $b->fullname;
     }
 
-    // Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours
+    // Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours.
     $test = usort($courses, 'comparer_cours');
     $ind = -1;
     $sitecourses = array();
@@ -256,25 +256,25 @@ function block_tableau_bord_get_sorted_courses_alphabetique() {
         if ($course->id > 0) {
             $ind++;
             $courses[$key] = $course;
-            // Fabrique le tableau d'ordre des cours present dans $USER->preferences
+            // Fabrique le tableau d'ordre des cours present dans $USER->preferences.
             $tmp = intval($course->id);
             $order[$ind] = $tmp;
         }
     }
 
-    // Applique le nouveau changement aux preferences de l'utilisateur
+    // Applique le nouveau changement aux preferences de l'utilisateur.
     block_tableau_bord_update_myorder($order);
 }
 
-// Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop
-function mode_edition_cours(){
+// Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop.
+function mode_edition_cours() {
     global $USER;
-    // Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree)
+    // Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree).
     $USER->userediting_course = true;
 }
 
 function quitter_edition_cours(){
     global $USER;
-    // Passe la variable d'edition a faux
+    // Passe la variable d'edition a faux.
     $USER->userediting_course = false;
 }
