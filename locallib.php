@@ -169,32 +169,29 @@ function block_tableau_bord_get_sorted_courses() {
 
     $order = array();
     if (!is_null($usersortorder = get_user_preferences('tableau_bord_course_order'))) {
-        $order = unserialize($usersortorder);
+        $order = explode (",", $usersortorder);
     }
 
+    $update = false;
     $sortedcourses = array();
-    $counter = 0;
-    // Get courses in sort order into list.
-    foreach ($order as $key => $cid) {
-        if (($counter >= $limit) && ($limit != 0)) {
-            break;
-        }
-
+    foreach ($order as $cid) {
+        $ind = intval($cid);
         // Make sure user is still enroled.
-        if (isset($courses[$cid])) {
-            $sortedcourses[$cid] = $courses[$cid];
-            $counter++;
+        if (isset($courses[$ind])) {
+            $sortedcourses[] = $courses[$ind];
+            $c = $courses[$ind];
+            $c->inplace = true;
+            $courses[$ind] = $c;
+        } else {
+            $update = true;
         }
     }
 
     // Append unsorted courses if limit allows.
     foreach ($courses as $c) {
-        if (($limit != 0) && ($counter >= $limit)) {
-            break;
-        }
-        if (!in_array($c->id, $order)) {
-            $sortedcourses[$c->id] = $c;
-            $counter++;
+        if (!isset($c->inplace)) {
+            $sortedcourses[] = $c;
+            $update = true;
         }
     }
 
@@ -205,6 +202,21 @@ function block_tableau_bord_get_sorted_courses() {
             $sitecourses[$key] = $course;
         }
     }
+
+    if ($update) {
+        $neworder = "";
+        foreach ($sortedcourses as $course) {
+            $neworder .= $course->id . ",";
+        }
+
+        if (strlen($neworder) > 0) {
+            $neworder = substr($neworder, 0, strlen($neworder) - 1);
+            set_user_preference('tableau_bord_course_order', $neworder);
+        } else {
+            unset_user_preference('tableau_bord_course_order');
+        }
+    }
+
     return array($sortedcourses, $sitecourses, count($courses));
 }
 

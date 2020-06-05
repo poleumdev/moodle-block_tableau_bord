@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020041404;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2020060313;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2013050100;        // Requires this Moodle version.
 $plugin->component = 'block_tableau_bord';

@@ -69,34 +69,36 @@ class block_tableau_bord extends block_base {
 
         $content = array();
 
-        $updatemynumber = optional_param('mynumber', -1, PARAM_INT);
-        if ($updatemynumber >= 0) {
-            block_tableau_bord_update_mynumber($updatemynumber);
-        }
-
         profile_load_custom_fields($USER);
         list($sortedcourses, $sitecourses, $totalcourses) = block_tableau_bord_get_sorted_courses();
         $overviews = block_tableau_bord_get_overviews($sitecourses);
 
         $renderer = $this->page->get_renderer('block_tableau_bord');
+
         if (!empty($config->showwelcomearea)) {
             require_once($CFG->dirroot.'/message/lib.php');
             $msgcount = message_count_unread_messages();
-            $this->content->text = $renderer->welcome_area($msgcount);
-        }
-
-        // Number of sites to display.
-        if ($this->page->user_is_editing() && empty($config->forcedefaultmaxcourses)) {
-            $this->content->text .= $renderer->editing_bar_head($totalcourses);
+            $this->content->text .= $renderer->welcome_area($msgcount);
         }
 
         if (empty($sortedcourses)) {
-            $this->content->text .= get_string('nocourses', 'my');
+            $this->content->text .= "<b>" . get_string('nocourses', 'my') . "</b>";
         } else {
-            $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews);
-            $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
-        }
+            if ($this->page->user_is_editing()) {
+                $std = array();
+                foreach ($sortedcourses as $course) {
+                    $std[] = $course;
+                }
+                // Load script Ajax.
+                $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
 
+                $this->content->text .= $renderer->render_from_template('block_tableau_bord/lstcourse',
+                                            array('std' => $std, 'wroot' => $CFG->wwwroot, 'userid' => $USER->id), null);
+            } else {
+                $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews);
+                $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
+            }
+        }
         return $this->content;
     }
 
