@@ -220,66 +220,6 @@ function block_tableau_bord_get_sorted_courses() {
     return array($sortedcourses, $sitecourses, count($courses));
 }
 
-// Tri les cours par ordre alphabetique.
-function block_tableau_bord_get_sorted_courses_alphabetique() {
-    global $USER;
-
-    $limit = block_tableau_bord_get_max_user_courses();
-
-    $courses = enrol_get_my_courses('id, shortname, fullname, modinfo, sectioncache');
-    $site = get_site();
-
-    if (array_key_exists($site->id, $courses)) {
-        unset($courses[$site->id]);
-    }
-
-    foreach ($courses as $c) {
-        if (isset($USER->lastcourseaccess[$c->id])) {
-            $courses[$c->id]->lastaccess = $USER->lastcourseaccess[$c->id];
-        } else {
-            $courses[$c->id]->lastaccess = 0;
-        }
-    }
-
-    // Get remote courses.
-    $remotecourses = array();
-    if (is_enabled_auth('mnet')) {
-        $remotecourses = get_my_remotecourses();
-    }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
-    foreach ($remotecourses as $id => $val) {
-        $remoteid = $val->remoteid * -1;
-        $val->id = $remoteid;
-        $courses[$remoteid] = $val;
-    }
-
-    $order = array();
-    if (!is_null($usersortorder = get_user_preferences('course_overview_course_order'))) {
-        $order = unserialize($usersortorder);
-    }
-
-    function comparer_cours($a, $b) {
-        return $a->fullname > $b->fullname;
-    }
-
-    // Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours.
-    $test = usort($courses, 'comparer_cours');
-    $ind = -1;
-    $sitecourses = array();
-    foreach ($courses as $key => $course) {
-        if ($course->id > 0) {
-            $ind++;
-            $courses[$key] = $course;
-            // Fabrique le tableau d'ordre des cours present dans $USER->preferences.
-            $tmp = intval($course->id);
-            $order[$ind] = $tmp;
-        }
-    }
-
-    // Applique le nouveau changement aux preferences de l'utilisateur.
-    block_tableau_bord_update_myorder($order);
-}
-
 // Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop.
 function mode_edition_cours() {
     global $USER;
