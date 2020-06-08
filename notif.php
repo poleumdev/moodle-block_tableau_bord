@@ -95,20 +95,12 @@ function creer_notif($courses, &$notification, $mod) {
 
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
         // Recuperation de toutes les chaines de caracteres utiles a afficher.
-        $strduedate = get_string('duedate', 'block_tableau_bord');
         $strcutoffdate = get_string('nosubmissionsacceptedafter', 'block_tableau_bord');
         $strnolatesubmissions = get_string('nolatesubmissions', 'block_tableau_bord');
-        $strduedateno = get_string('duedateno', 'block_tableau_bord');
-        $strgraded = get_string('graded', 'block_tableau_bord');
-        $strnotgradedyet = get_string('notgradedyet', 'block_tableau_bord');
-        $strnotsubmittedyet = get_string('notsubmittedyet', 'block_tableau_bord');
-        $strsubmitted = get_string('submitted', 'block_tableau_bord');
         $strassignment = get_string('modulenameassign', 'block_tableau_bord');
-        $strreviewed = get_string('reviewed', 'block_tableau_bord');
 
         // We do all possible database work here *outside* of the loop to ensure this scales.
         list($sqlassignmentids, $assignmentidparams) = $DB->get_in_or_equal($assignmentids);
-        $mysubmissions = null;
         $unmarkedsubmissions = null;
 
         foreach ($assignments as $assignment) {
@@ -270,7 +262,6 @@ function creer_notif($courses, &$notification, $mod) {
         }
 
         // Courses to search for new posts.
-        $coursessqls = array();
         $params = array();
         $tableauaccesforum = array();
 
@@ -443,7 +434,7 @@ function creer_notif($courses, &$notification, $mod) {
                 // Si le journal n'est pas cache.
                 // (inutile dans le cas ou l'utilisateur est un etudiant car la fonction
                 // 'get_all_instances_in_courses' ne lui retourne pas les journaux caches).
-                if ($visible) {
+                if ($visibilite) {
                     // S'il a une date de fin de restriction.
                     $journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish);
                 }

@@ -138,8 +138,6 @@ function block_tableau_bord_get_max_user_courses() {
 function block_tableau_bord_get_sorted_courses() {
     global $USER;
 
-    $limit = block_tableau_bord_get_max_user_courses();
-
     $courses = enrol_get_my_courses();
     $site = get_site();
 

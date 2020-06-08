@@ -44,8 +44,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      * @return string html to be displayed in tableau_bord block
      */
     public function tableau_bord($courses, $overviews) {
-        global $CFG, $USER, $DB;
-        $moodleurl = new moodle_url(null);
+        global $CFG, $USER;
         $html = '<script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/Chart.min.js'.'"></script>
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/graphes.js'.'"></script>
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/xhr.js'.'"></script>';

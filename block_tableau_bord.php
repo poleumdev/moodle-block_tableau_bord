@@ -53,7 +53,7 @@ class block_tableau_bord extends block_base {
      * @return stdClass contents of block
      */
     public function get_content() {
-        global $USER, $CFG, $DB;
+        global $USER, $CFG;
 
         require_once($CFG->dirroot.'/user/profile/lib.php');
 
@@ -66,8 +66,6 @@ class block_tableau_bord extends block_base {
         $this->content = new stdClass();
         $this->content->text = '';
         $this->content->footer = '';
-
-        $content = array();
 
         profile_load_custom_fields($USER);
         list($sortedcourses, $sitecourses, $totalcourses) = block_tableau_bord_get_sorted_courses();
