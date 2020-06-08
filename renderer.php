@@ -175,10 +175,10 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             // Recupere ce qui permet d'afficher le suivi d'avancement selon le role de l'utilisateur dans ce cours.
             if ($roleutilisateur == "teacher" ) {
                 // Recupere les deux types d'avancement dans deux variables differentes.
-                list($avancementglobal, $avancementdetaille) = $this->afficherAvtProf($course);
+                list($avancementglobal, $avancementdetaille) = $this->afficher_avt_prof($course);
             } else if ($roleutilisateur == "student") {
                 // Recupere les deux types d'avancement dans deux variables differentes.
-                list($avancementglobal, $avancementdetaille) = $this->afficherAvtEtu($course);
+                list($avancementglobal, $avancementdetaille) = $this->afficher_avt_etu($course);
             }
 
             // Affiche l'avancement global s'il existe.
@@ -366,7 +366,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         return $output;
     }
 
-    public function afficherAvtProf($course){
+    public function afficher_avt_prof($course) {
         $avancementglobal = "";
         $avancementdetaille = "";
         // Recuperation des donnees du cours (code de la page rapport d'activite).
@@ -408,14 +408,14 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         // Pour chaque utilisateur.
         foreach ($progress as $user) {
-            $nb_act_achevee = 0; // Nombre d'activite achevees par l'utilisateur.
-            $nb_act_non_achevee = 0; // Nombre d'activite non achevees par l'utilisateur.
-            $pourcentage_achevement = 0;
+            $nbactachevee = 0; // Nombre d'activite achevees par l'utilisateur.
+            $nbactnonachevee = 0; // Nombre d'activite non achevees par l'utilisateur.
+            $pcentachevement = 0;
 
-            // Pour chaque activite faisant partie du suivi d'achevement
+            // Pour chaque activite faisant partie du suivi d'achevement.
             foreach ($activities as $activity) {
                 // Recuperation de l'etat de l'activite.
-                if (array_key_exists($activity->id,$user->progress)) {
+                if (array_key_exists($activity->id, $user->progress)) {
                     $thisprogress = $user->progress[$activity->id];
                     $state = $thisprogress->completionstate;
                 } else {
@@ -426,272 +426,286 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 switch($state) {
                     case COMPLETION_INCOMPLETE :
                     case COMPLETION_COMPLETE_FAIL :
-                        $nb_act_non_achevee++;
+                        $nbactnonachevee++;
                         $nbactnonacheveetotal++;
                         break;
                     case COMPLETION_COMPLETE :
                     case COMPLETION_COMPLETE_PASS :
-                        $nb_act_achevee++;
+                        $nbactachevee++;
                         $nbactacheveetotal++;
                         break;
                 }
             }
 
-            $pourcentage_achevement = $nb_act_achevee / count($activities) * 100; // Pourcentage d'activite completees.
-            $palier = floor($pourcentage_achevement / 10); // Recupere l'indice correspondant a un palier d'avancement.
+            $pcentachevement = $nbactachevee / count($activities) * 100; // Pourcentage d'activite completees.
+            $palier = floor($pcentachevement / 10); // Recupere l'indice correspondant a un palier d'avancement.
             $tableauhisto[$palier]++; // Incremente le nombre d'etudiant dans le palier correspondant.
         }
 
         // Pourcentage de l'avancement moyen de tous les utilisateurs.
-        $pourcentage_acheve = ($nbactacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
-        $pourcentage_non_acheve = ($nbactnonacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
+        $pcentacheve = ($nbactacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
+        $pcentnonacheve = ($nbactnonacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
 
-        $id_canvas_histo = "canvasHisto" . $course->id;
-        $id_canvas_global = "affichage-global-cours-" . $course->id;
+        $idcanvashisto = "canvasHisto" . $course->id;
+        $idcanvasglobal = "affichage-global-cours-" . $course->id;
 
-        $histogramme =""; // Contient le code html permettant d'afficher l'histogramme.
-        // Creation du canvas pour l'histo et des variable JS a passer en parametre de la fonction JS qui creera l'histo
-        $histogramme .= '<canvas id="'.$id_canvas_histo.'"  width="450"></canvas>'.
+        $histogramme = ""; // Contient le code html permettant d'afficher l'histogramme.
+        // Creation du canvas pour l'histo et des variable JS a passer en parametre de la fonction JS qui creera l'histo.
+        $histogramme .= '<canvas id="'.$idcanvashisto.'"  width="450"></canvas>'.
                         '<script type="text/javascript">
-                          var canvasHisto = "'.$id_canvas_histo.'";
+                          var canvasHisto = "'.$idcanvashisto.'";
                           var tableauHisto = new Array();';
-        for ($i = 0; $i < count($tableauhisto); $i++) { // Rempli le tableau javascript a l'aide du tableau php
+        for ($i = 0; $i < count($tableauhisto); $i++) { // Rempli le tableau javascript a l'aide du tableau php.
             $histogramme .= "tableauHisto[".$i."] = " . $tableauhisto[$i] . ";";
         }
 
         // Lien vers le rapport "achèvement d'activités" dans le cours.
         $url = new moodle_url("/report/tuteur/index.php", array('course' => $course->id));
 
-        // Creation de l'histogramme pour le cours
+        // Creation de l'histogramme pour le cours.
         $histogramme .= 'creerBar(canvasHisto,tableauHisto); </script>
                         <center><b>Nombre d\'étudiants par pourcentage d\'avancement</b>'
-                        . $this->output->help_icon('teacherdetailedprogress','block_tableau_bord')
+                        . $this->output->help_icon('teacherdetailedprogress', 'block_tableau_bord')
                         . '</center>'
-                        .'<div class = "link-button"> <a href="'.$url.'">Afficher l\'achèvement d\'activités par étudiant </a> </div>';
-        // Creation de l'affichage global pour le cours (camembert)
-        $avancementglobal .= '<center><canvas id="'.$id_canvas_global.'" height="90" width="120"></canvas></center>
+                        .'<div class = "link-button"> <a href="' .
+                        $url . '">Afficher l\'achèvement d\'activités par étudiant </a> </div>';
+        // Creation de l'affichage global pour le cours (camembert).
+        $avancementglobal .= '<center><canvas id="'.$idcanvasglobal.'" height="90" width="120"></canvas></center>
                     <script>
                     var canvasGlobal="affichage-global-cours-'.$course->id.'";
-                    var pourcentage_act_complet_'.$course->id.' ='.$pourcentage_acheve.';
-                    var pourcentage_act_incomplet_'.$course->id.' ='.$pourcentage_non_acheve.';
+                    var pourcentage_act_complet_'.$course->id.' ='.$pcentacheve.';
+                    var pourcentage_act_incomplet_'.$course->id.' ='.$pcentnonacheve.';
                     creerPieProf(canvasGlobal, pourcentage_act_complet_'.$course->id.', pourcentage_act_incomplet_'.$course->id.');
                     </script>
-                    <center><b>'. get_string('teacherprogress','block_tableau_bord')
-                    . ' : '.intval($pourcentage_acheve).' % </b> '
-                    . $this->output->help_icon('teacherglobalprogress','block_tableau_bord').'</center>';
+                    <center><b>'. get_string('teacherprogress', 'block_tableau_bord')
+                    . ' : '.intval($pcentacheve).' % </b> '
+                    . $this->output->help_icon('teacherglobalprogress', 'block_tableau_bord').'</center>';
 
-        // Contient l'histogramme dans une menu deroulant
+        // Contient l'histogramme dans une menu deroulant.
         $avancementdetaille .= $this->collapsible_region($histogramme, '', 'region_histo_'.$course->id,
                     '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').'" alt="Avancement icon" /> '.
-                    '<b>'.get_string('seeprogressteacher','block_tableau_bord').'</b>', '', true);
-        // Retourne les deux types d'avancement separement
+                    '<b>'.get_string('seeprogressteacher', 'block_tableau_bord').'</b>', '', true);
+        // Retourne les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
     }
 
-    public function afficherAvtEtu($course) {
-        global $OUTPUT;
+    public function afficher_avt_etu($course) {
         $avancementglobal = ""; // Contient le code html affichant l'avancement global.
         $avancementdetaille = ""; // Contient le code html affichant l'avancement detaille.
 
         $completion = new completion_info($course);
 
-        // TOUTES les infos de toutes les activites faisant partie du suivi d'achevement
+        // TOUTES les infos de toutes les activites faisant partie du suivi d'achevement.
         $activities = $completion->get_activities();
-        $nbact = count($activities); // Nombre total d'activites
+        $nbact = count($activities); // Nombre total d'activites.
 
         $context = context_course::instance($course->id);
 
-        $nb_act_achevee = 0; // Nombre total d'activites achevees
-        $nb_act_non_achevee = 0; // Nombre total d'activites non achevees
+        $nbactachevee = 0; // Nombre total d'activites achevees.
+        $nbactnonachevee = 0; // Nombre total d'activites non achevees.
 
-        // Nombre d'activites achevees et non achevees pour differents types d'activites
-        $devoir_acheve = 0;
-        $devoir_non_acheve =0;
-        $lecon_achevee = 0;
-        $lecon_non_achevee =0;
-        $ressource_achevee = 0;
-        $ressource_non_achevee =0;
-        $test_acheve = 0;
-        $test_non_acheve =0;
-        $autre_acheve = 0;
-        $autre_non_acheve =0;
+        // Nombre d'activites achevees et non achevees pour differents types d'activites.
+        $devoiracheve = 0;
+        $devoirnonacheve = 0;
+        $leconachevee = 0;
+        $leconnonachevee = 0;
+        $ressourceachevee = 0;
+        $ressourcenonachevee = 0;
+        $testacheve = 0;
+        $testnonacheve = 0;
+        $autreacheve = 0;
+        $autrenonacheve = 0;
 
         // Compte le nombre total d'activites achevees et non achevees pour differents types d'activite
-        // (la table "mdl_modules" liste les types)
+        // (la table "mdl_modules" liste les types).
         foreach ($activities as $activity) {
             $data = $completion->get_data($activity);
-            // Si l'activite est achevee
+            // Si l'activite est achevee.
             if ($data->completionstate) {
-                $nb_act_achevee = $nb_act_achevee + 1;
+                $nbactachevee = $nbactachevee + 1;
                 if ($activity->modname == 'assign') {
-                    $devoir_acheve = $devoir_acheve + 1;
-                } elseif ($activity->modname == 'lesson') {
-                    $lecon_achevee = $lecon_achevee + 1;
-                } elseif ($activity->modname == 'resource') {
-                    $ressource_achevee = $ressource_achevee + 1;
-                } elseif ($activity->modname == 'quiz') {
-                    $test_acheve = $test_acheve + 1;
+                    $devoiracheve++;
+                } else if ($activity->modname == 'lesson') {
+                    $leconachevee++;
+                } else if ($activity->modname == 'resource') {
+                    $ressourceachevee++;
+                } else if ($activity->modname == 'quiz') {
+                    $testacheve++;
                 } else {
-                    $autre_acheve = $autre_acheve + 1;
+                    $autreacheve++;
                 }
             } else {
-                $nb_act_non_achevee++;
+                $nbactnonachevee++;
                 if ($activity->modname == 'assign') {
-                    $devoir_non_acheve = $devoir_non_acheve + 1;
-                } elseif ($activity->modname == 'lesson') {
-                    $lecon_non_achevee = $lecon_non_achevee + 1;
-                } elseif ($activity->modname == 'resource') {
-                    $ressource_non_achevee = $ressource_non_achevee + 1;
-                } elseif ($activity->modname == 'quiz') {
-                    $test_non_acheve = $test_non_acheve + 1;
+                    $devoirnonacheve++;
+                } else if ($activity->modname == 'lesson') {
+                    $leconnonachevee++;
+                } else if ($activity->modname == 'resource') {
+                    $ressourcenonachevee++;
+                } else if ($activity->modname == 'quiz') {
+                    $testnonacheve++;
                 } else {
-                    $autre_non_acheve = $autre_non_acheve + 1;
+                    $autrenonacheve++;
                 }
             }
         }
 
-        $pourcentage_achevee = $nb_act_achevee / $nbact * 100; // Pourcentage d'activites achevees.
-        $pourcentage_non_achevee = 100 - $pourcentage_achevee; // Pourcentage d'activites non achevees.
+        $pcentacheve = $nbactachevee / $nbact * 100; // Pourcentage d'activites achevees.
+        $pcentnonacheve = 100 - $pcentacheve; // Pourcentage d'activites non achevees.
 
-        $avancement_activite =""; // Contient l'affichage detaille (un graphe pour un type d'activite)
+        $avtactivite = ""; // Contient l'affichage detaille (un graphe pour un type d'activite).
 
-        // Pourcentage de completion pour chaque type d'activite ainsi qu'ajout du canvas et du graphe dans celui-ci
-        if ($devoir_acheve + $devoir_non_acheve > 0) {
-            $pourcentage_devoir_acheve = $devoir_acheve / ($devoir_acheve + $devoir_non_acheve) * 100;
-            $pourcentage_devoir_non_acheve = 100 - $pourcentage_devoir_acheve;
-            $avancement_activite .=  '<div class = canvasDetaille><center><b>'. get_string('assign','block_tableau_bord') .'</b></center>
-                            <canvas id="affichage-devoir-cours-'.$course->id.'" height="60" width="80"></canvas>';
+        // Pourcentage de completion pour chaque type d'activite ainsi qu'ajout du canvas et du graphe dans celui-ci.
+        if ($devoiracheve + $devoirnonacheve > 0) {
+            $pcentdevoiracheve = $devoiracheve / ($devoiracheve + $devoirnonacheve) * 100;
+            $pcentdevoirnonacheve = 100 - $pcentdevoiracheve;
+            $avtactivite .= '<div class = canvasDetaille>';
+            $avtactivite .= '<center><b>'. get_string('assign', 'block_tableau_bord') .'</b></center>';
+            $avtactivite .= '<canvas id="affichage-devoir-cours-'. $course->id. '" height="60" width="80"></canvas>';
 
-            // Affiche le nombre de devoirs restants
-            if ($devoir_non_acheve <= 1) {
-                $avancement_activite .= '<center>'. get_string('oneactivityremaining','block_tableau_bord',$devoir_non_acheve) .'</center></div>';
+            // Affiche le nombre de devoirs restants.
+            $avtactivite .= '<center>';
+            if ($devoirnonacheve <= 1) {
+                $avtactivite .= get_string('oneactivityremaining', 'block_tableau_bord', $devoirnonacheve);
             } else {
-                $avancement_activite .= '<center>'. get_string('someactivityremaining','block_tableau_bord',$devoir_non_acheve) .'</center></div>';
+                $avtactivite .= get_string('someactivityremaining', 'block_tableau_bord', $devoirnonacheve);
             }
+            $avtactivite .= '</center></div>';
 
-            $avancement_activite .= '<script>
+            $avtactivite .= '<script>
                         var canvas_devoir = "affichage-devoir-cours-'.$course->id.'";
-                        var pourcentage_devoir_acheve_'.$course->id.' ='.$pourcentage_devoir_acheve.';
-                        var pourcentage_devoir_non_acheve_'.$course->id.' ='.$pourcentage_devoir_non_acheve.';
+                        var pourcentage_devoir_acheve_'.$course->id.' ='.$pcentdevoiracheve.';
+                        var pourcentage_devoir_non_acheve_'.$course->id.' ='.$pcentdevoirnonacheve.';
 
-                        creerPieDetaille(canvas_devoir, pourcentage_devoir_acheve_'.$course->id.', pourcentage_devoir_non_acheve_'.$course->id.');
+                        creerPieDetaille(canvas_devoir, pourcentage_devoir_acheve_'.
+                            $course->id.', pourcentage_devoir_non_acheve_'.$course->id.');
                         </script>';
         }
 
-        if ($lecon_achevee + $lecon_non_achevee > 0) {
-            $pourcentage_lecon_achevee = $lecon_achevee / ($lecon_achevee + $lecon_non_achevee) * 100;
-            $pourcentage_lecon_non_achevee = 100 - $pourcentage_lecon_achevee;
-            $avancement_activite .=	'<div class = canvasDetaille><center><b>'. get_string('lesson','block_tableau_bord') .'</b></center>
-                            <canvas id="affichage-lecon-cours-'.$course->id.'" height="60" width="80"></canvas>';
+        if ($leconachevee + $leconnonachevee > 0) {
+            $pcentleconachevee = $leconachevee / ($leconachevee + $leconnonachevee) * 100;
+            $pcentleconnonachevee = 100 - $pcentleconachevee;
+            $avtactivite .= '<div class = canvasDetaille>';
+            $avtactivite .= '<center><b>'. get_string('lesson', 'block_tableau_bord') .'</b></center>';
+            $avtactivite .= '<canvas id="affichage-lecon-cours-'. $course->id .'" height="60" width="80"></canvas>';
 
-            // Affiche le nombre de lecons restantes
-            if ($lecon_non_achevee <= 1) {
-                $avancement_activite .= '<center>'. get_string('oneactivityfeminineremaining','block_tableau_bord',$lecon_non_achevee) .'</center></div>';
+            // Affiche le nombre de lecons restantes.
+            $avtactivite .= '<center>';
+            if ($leconnonachevee <= 1) {
+                $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $leconnonachevee);
             } else {
-                $avancement_activite .= '<center>'. get_string('someactivityfeminineremaining','block_tableau_bord',$lecon_non_achevee) .'</center></div>';
+                $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $leconnonachevee);
             }
-
-            $avancement_activite .= '<script>
+            $avtactivite .= '</center></div>';
+            $avtactivite .= '<script>
                         var canvas_lecon = "affichage-lecon-cours-'.$course->id.'";
-                        var pourcentage_lecon_achevee_'.$course->id.' ='.$pourcentage_lecon_achevee.';
-                        var pourcentage_lecon_non_achevee_'.$course->id.' ='.$pourcentage_lecon_non_achevee.';
+                        var pourcentage_lecon_achevee_'.$course->id.' ='.$pcentleconachevee.';
+                        var pourcentage_lecon_non_achevee_'.$course->id.' ='.$pcentleconnonachevee.';
 
-                        creerPieDetaille(canvas_lecon, pourcentage_lecon_achevee_'.$course->id.', pourcentage_lecon_non_achevee_'.$course->id.');
+                        creerPieDetaille(canvas_lecon, pourcentage_lecon_achevee_'.$course->id.
+                        ', pourcentage_lecon_non_achevee_'.$course->id.');
                         </script>';
         }
 
-        if ($ressource_achevee + $ressource_non_achevee > 0) {
-            $pourcentage_ressource_achevee = $ressource_achevee / ($ressource_achevee + $ressource_non_achevee) * 100;
-            $pourcentage_ressource_non_achevee = 100 - $pourcentage_ressource_achevee;
-            $avancement_activite .= '<div class = canvasDetaille><center><b>'. get_string('resource','block_tableau_bord') .'</b></center>
-                            <canvas id="affichage-ressource-cours-'.$course->id.'" height="60" width="80"></canvas>';
+        if ($ressourceachevee + $ressourcenonachevee > 0) {
+            $pcentressourceachevee = $ressourceachevee / ($ressourceachevee + $ressourcenonachevee) * 100;
+            $pcentressourcenonachevee = 100 - $pcentressourceachevee;
+            $avtactivite .= '<div class = canvasDetaille>';
+            $avtactivite .= '<center><b>'. get_string('resource', 'block_tableau_bord') .'</b></center>';
+            $avtactivite .= '<canvas id="affichage-ressource-cours-' . $course->id . '" height="60" width="80"></canvas>';
 
-            // Affiche le nombre de ressources restantes
-            if ($ressource_non_achevee <= 1) {
-                $avancement_activite .= '<center>'. get_string('oneactivityfeminineremaining','block_tableau_bord',$ressource_non_achevee) .'</center></div>';
+            // Affiche le nombre de ressources restantes.
+            $avtactivite .= '<center>';
+            if ($ressourcenonachevee <= 1) {
+                $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $ressourcenonachevee);
             } else {
-                $avancement_activite .= '<center>'. get_string('someactivityfeminineremaining','block_tableau_bord',$ressource_non_achevee) .'</center></div>';
+                $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $ressourcenonachevee);
             }
-
-            $avancement_activite .= '<script>
+            $avtactivite .= '</center></div>';
+            $avtactivite .= '<script>
                         var canvas_ressource = "affichage-ressource-cours-'.$course->id.'";
-                        var pourcentage_ressource_achevee_'.$course->id.' ='.$pourcentage_ressource_achevee.';
-                        var pourcentage_ressource_non_achevee_'.$course->id.' ='.$pourcentage_ressource_non_achevee.';
+                        var pourcentage_ressource_achevee_'.$course->id.' ='.$pcentressourceachevee.';
+                        var pourcentage_ressource_non_achevee_'.$course->id.' ='.$pcentressourcenonachevee.';
 
-                        creerPieDetaille(canvas_ressource, pourcentage_ressource_achevee_'.$course->id.', pourcentage_ressource_non_achevee_'.$course->id.');
+                        creerPieDetaille(canvas_ressource, pourcentage_ressource_achevee_'.$course->id.
+                        ', pourcentage_ressource_non_achevee_'.$course->id.');
                         </script>';
         }
 
-        if ($test_acheve + $test_non_acheve > 0) {
-            $pourcentage_test_acheve = $test_acheve / ($test_acheve + $test_non_acheve) * 100;
-            $pourcentage_test_non_acheve = 100 - $pourcentage_test_acheve;
-            $avancement_activite .= '<div class = canvasDetaille><center><b>'. get_string('quiz','block_tableau_bord') .'</b></center>
-                            <canvas id="affichage-test-cours-'.$course->id.'" height="60" width="80"></canvas>';
-            // Affiche le nombre de ressources restantes
-            if ($test_non_acheve <= 1) {
-                $avancement_activite .= '<center>'. get_string('oneactivityremaining','block_tableau_bord',$test_non_acheve) .'</center></div>';
+        if ($testacheve + $testnonacheve > 0) {
+            $pcenttestacheve = $testacheve / ($testacheve + $testnonacheve) * 100;
+            $pcenttestnonacheve = 100 - $pcenttestacheve;
+            $avtactivite .= '<div class = canvasDetaille>';
+            $avtactivite .= '<center><b>'. get_string('quiz', 'block_tableau_bord') .'</b></center>';
+            $avtactivite .= '<canvas id="affichage-test-cours-'.$course->id.'" height="60" width="80"></canvas>';
+            // Affiche le nombre de ressources restantes.
+            $avtactivite .= '<center>';
+            if ($testnonacheve <= 1) {
+                $avtactivite .= get_string('oneactivityremaining', 'block_tableau_bord', $testnonacheve);
             } else {
-                $avancement_activite .= '<center>'. get_string('someactivityremaining','block_tableau_bord',$test_non_acheve) .'</center></div>';
+                $avtactivite .= get_string('someactivityremaining', 'block_tableau_bord', $testnonacheve);
             }
+            $avtactivite .= '</center></div>';
 
-            $avancement_activite .= '<script>
+            $avtactivite .= '<script>
                         var canvas_test = "affichage-test-cours-'.$course->id.'";
-                        var pourcentage_test_acheve_'.$course->id.' ='.$pourcentage_test_acheve.';
-                        var pourcentage_test_non_acheve_'.$course->id.' ='.$pourcentage_test_non_acheve.';
-
-                        creerPieDetaille(canvas_test, pourcentage_test_acheve_'.$course->id.', pourcentage_test_non_acheve_'.$course->id.');
-                        </script>';
+                        var pourcentage_test_acheve_'.$course->id.' ='.$pcenttestacheve.';
+                        var pourcentage_test_non_acheve_'.$course->id.' ='.$pcenttestnonacheve.';
+                        creerPieDetaille(canvas_test, pourcentage_test_acheve_'. $course->id .
+                        ', pourcentage_test_non_acheve_'. $course->id. ');</script>';
         }
 
-        if ($autre_acheve + $autre_non_acheve > 0) {
-            $pourcentage_autre_acheve = $autre_acheve / ($autre_acheve + $autre_non_acheve) * 100;
-            $pourcentage_autre_non_acheve = 100 - $pourcentage_autre_acheve;
-            $avancement_activite .= '<div class = canvasDetaille><center><b>'. get_string('otheractivity','block_tableau_bord') .'</b></center>
-                            <canvas id="affichage-autre-cours-'.$course->id.'" height="60" width="80"></canvas>';
-
-            // Affiche le nombre d'autres activites restantes
-            if ($autre_non_acheve <= 1) {
-                $avancement_activite .= '<center>'. get_string('oneactivityfeminineremaining','block_tableau_bord',$autre_non_acheve) .'</center></div>';
+        if ($autreacheve + $autrenonacheve > 0) {
+            $pcentautreacheve = $autreacheve / ($autreacheve + $autrenonacheve) * 100;
+            $pcentautrenonacheve = 100 - $pcentautreacheve;
+            $avtactivite .= '<div class = canvasDetaille>';
+            $avtactivite .= '<center><b>'. get_string('otheractivity', 'block_tableau_bord') .'</b></center>';
+            $avtactivite .= '<canvas id="affichage-autre-cours-'. $course->id. '" height="60" width="80"></canvas>';
+            $avtactivite .= '<center>';
+            // Affiche le nombre d'autres activites restantes.
+            if ($autrenonacheve <= 1) {
+                $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $autrenonacheve);
             } else {
-                $avancement_activite .= '<center>'. get_string('someactivityfeminineremaining','block_tableau_bord',$autre_non_acheve) .'</center></div>';
+                $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $autrenonacheve);
             }
+            $avtactivite .= '</center></div>';
 
-            $avancement_activite .= '<script>
+            $avtactivite .= '<script>
                         var canvas_autre = "affichage-autre-cours-'.$course->id.'";
-                        var pourcentage_autre_acheve_'.$course->id.' ='.$pourcentage_autre_acheve.';
-                        var pourcentage_autre_non_acheve_'.$course->id.' ='.$pourcentage_autre_non_acheve.';
-
-                        creerPieDetaille(canvas_autre, pourcentage_autre_acheve_'.$course->id.', pourcentage_autre_non_acheve_'.$course->id.');
-                        </script>';
+                        var pourcentage_autre_acheve_'.$course->id.' ='.$pcentautreacheve.';
+                        var pourcentage_autre_non_acheve_'.$course->id.' ='.$pcentautrenonacheve.';
+                        creerPieDetaille(canvas_autre, pourcentage_autre_acheve_'. $course->id .
+                        ', pourcentage_autre_non_acheve_'.$course->id.');</script>';
         }
-        // info bulle à la fin :
-        $avancement_activite .= $OUTPUT->help_icon('studentdetailedprogress','block_tableau_bord');
+        // Info bulle à la fin.
+        $avtactivite .= $this->output->help_icon('studentdetailedprogress', 'block_tableau_bord');
 
-        // Cree le diagramme d'avancement global
-        $avancementglobal .= ' <center><canvas id="affichage-global-cours-'.$course->id.'" height="90" width="120" ></canvas></center>
+        // Cree le diagramme d'avancement global.
+        $avancementglobal .= ' <center><canvas id="affichage-global-cours-'. $course->id .
+                    '" height="90" width="120" ></canvas></center>
                     <script>
                     var canvas = "affichage-global-cours-'.$course->id.'";
-                    var pourcentage_act_achevee_'.$course->id.' ='.$pourcentage_achevee.';
-                    var pourcentage_act_non_achevee_'.$course->id.' ='.$pourcentage_non_achevee.';
+                    var pourcentage_act_achevee_'.$course->id.' ='.$pcentacheve.';
+                    var pourcentage_act_non_achevee_'.$course->id.' ='.$pcentnonacheve.';
                     creerPie(canvas, pourcentage_act_achevee_'.$course->id.', pourcentage_act_non_achevee_'.$course->id.');
                     </script>
 
-                    <center><b>'. get_string('studentprogress','block_tableau_bord').' : '.intval($pourcentage_achevee).' %</b>
-                    '.$OUTPUT->help_icon('studentglobalprogress','block_tableau_bord').'</center>';
+                    <center><b>'. get_string('studentprogress', 'block_tableau_bord').' : '.intval($pcentacheve).' %</b>
+                    '.$this->output->help_icon('studentglobalprogress', 'block_tableau_bord').'</center>';
 
-        // Contient les diagrammes d'avancement des types d'activite dans un menu deroulant
+        // Contient les diagrammes d'avancement des types d'activite dans un menu deroulant.
         $avancementdetaille .= $this->collapsible_region(
-                                        $avancement_activite, '', 'region_detaille_'.$course->id,
-                                        '<img src="'. $OUTPUT->image_url('avancement_18', 'block_tableau_bord').'"
-                                              alt="Avancement icon" /> <b>'.get_string('seeprogress','block_tableau_bord').'</b>',
+                                        $avtactivite, '', 'region_detaille_'.$course->id,
+                                        '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').
+                                        '"alt="Avancement icon" /> <b>'.get_string('seeprogress', 'block_tableau_bord').'</b>',
                                         '', true);
 
-        // Renvoie les deux types d'avancement separement
+        // Renvoie les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
     }
 
-    public function menu($courses){
-        global $USER,$CFG;
+    public function menu($courses) {
+        global $USER, $CFG;
         // Div pour le menu.
         $html = '<div class="menu">';
         $html .= '<div class="welcome_title"><p>';
@@ -728,7 +742,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      * Retourne une variable au format html
      */
     public function afficher_notification($course, $overviews) {
-        global $USER, $DB, $OUTPUT, $CFG;
+        global $USER, $DB, $CFG;
 
         $notifactivite = "";          // Contient toutes les notifications d'un type d'activite.
         $notifactivitecomplete = ""; // Contient toutes les notifications d'un type d'activite plus le titre.
@@ -741,8 +755,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $presencenotif = false;   // Booleen qui indique la presence de notification(s) affichee(s) ou non.
 
             // Pour chaque notification de ce type d'activite.
-            foreach ($overviews[$course->id][$module] as $coursemodule=>$notif) {
-                $param_notif = array('id_user' => $USER->id, 'id_course_module' => $coursemodule);
+            foreach ($overviews[$course->id][$module] as $coursemodule => $notif) {
                 $presencenotif = true;
 
                 // Lors du clic sur le bouton de suppression, un formulaire est appelé en JS/ajax.
@@ -780,7 +793,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 $notifactivite .= '</div>';
                 $notifactivite .= '<div class="clear"></div>';
 
-                $activiteaffichee ++; // Le nombre d'activite qui sont effectivement affichees
+                $activiteaffichee ++; // Le nombre d'activite qui sont effectivement affichees.
             }
             // Cree une variable JS contenant le nombre de notifs affichees pour un type d'activite donne dans un cours
             // Quand elle sera a zero elle permettra d'effacer le titre de ces notifs (ex: "vous avez des devoirs...")
@@ -819,18 +832,18 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         // Construit la phrase indiquant la presence de notification.
         if ($nbtypeactivite > 0) {
             if ($nbtypeactivite == 1) {
-                $icontext = '<img src="'. $OUTPUT->image_url('notification_18', 'block_tableau_bord')
+                $icontext = '<img src="'. $this->output->image_url('notification_18', 'block_tableau_bord')
                             . '" alt="Notification icon" /> <b>'
                             . get_string('youhaveanotification', 'block_tableau_bord').'</b>';
             } else {
-                $icontext = '<img src="'. $OUTPUT->image_url('notification_18', 'block_tableau_bord')
+                $icontext = '<img src="'. $this->output->image_url('notification_18', 'block_tableau_bord')
                             . '" alt="Notification icon" /> <b>'
                             . get_string('youhavesomenotifications', 'block_tableau_bord', $nbtypeactivite).'</b>';
             }
 
             // Met la variable contenant toutes les notifications ainsi qu'un bouton d'aide dans un menu deroulant.
             $html .= $this->collapsible_region(
-                                $notifactivitecomplete.$OUTPUT->help_icon('notifications', 'block_tableau_bord'),
+                                $notifactivitecomplete.$this->output->help_icon('notifications', 'block_tableau_bord'),
                                 '',
                                 'region_notification_'.$course->id,
                                 $icontext,
