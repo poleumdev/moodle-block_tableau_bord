@@ -18,18 +18,26 @@
  * tableau_bord block settings
  *
  * @package    block_tableau_bord
- * @copyright  2012 Adam Olley <adam.olley@netspot.com.au>
+ * @copyright  2020 PRN
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_tableau_bord/defaultmaxcourses', new lang_string('defaultmaxcourses', 'block_tableau_bord'),
+    $settings->add(
+        new admin_setting_configtext('block_tableau_bord/defaultmaxcourses',
+        new lang_string('defaultmaxcourses', 'block_tableau_bord'),
         new lang_string('defaultmaxcoursesdesc', 'block_tableau_bord'), 10, PARAM_INT));
-    $settings->add(new admin_setting_configcheckbox('block_tableau_bord/forcedefaultmaxcourses', new lang_string('forcedefaultmaxcourses', 'block_tableau_bord'),
+    $settings->add(
+        new admin_setting_configcheckbox('block_tableau_bord/forcedefaultmaxcourses',
+        new lang_string('forcedefaultmaxcourses', 'block_tableau_bord'),
         new lang_string('forcedefaultmaxcoursesdesc', 'block_tableau_bord'), 1, PARAM_INT));
-    $settings->add(new admin_setting_configcheckbox('block_tableau_bord/showchildren', new lang_string('showchildren', 'block_tableau_bord'),
+    $settings->add(
+        new admin_setting_configcheckbox('block_tableau_bord/showchildren',
+        new lang_string('showchildren', 'block_tableau_bord'),
         new lang_string('showchildrendesc', 'block_tableau_bord'), 1, PARAM_INT));
-    $settings->add(new admin_setting_configcheckbox('block_tableau_bord/showwelcomearea', new lang_string('showwelcomearea', 'block_tableau_bord'),
+    $settings->add(
+        new admin_setting_configcheckbox('block_tableau_bord/showwelcomearea',
+        new lang_string('showwelcomearea', 'block_tableau_bord'),
         new lang_string('showwelcomeareadesc', 'block_tableau_bord'), 1, PARAM_INT));
 }

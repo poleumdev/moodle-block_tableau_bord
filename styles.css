@@ -4,19 +4,15 @@ span.nouveautetdb{font-size: 18px;color:#333;margin-bottom:10px;}
 
 .block_tableau_bord div#tabs {
     float:left;
-    /*padding: 10px;*/
-	border-radius: 0;
-	border: 1px solid rgba(238,238,238,1);	
+    border-radius: 0;
+    border: 1px solid rgba(238,238,238,1);
 }
-
-/* --- --- --- */
 
 /* add jjupin 31/01/17 => ajouter une classe CSS si le cours est masqué (le griser) */
 div.course_not_visible {
-	opacity: 0.5;
+    opacity: 0.5;
 }
 /* end add jjupin 31/01/17 */
-
 
 .block_tableau_bord  {
     float: left;
@@ -25,22 +21,19 @@ div.course_not_visible {
     vertical-align: middle;
     border-collapse: separate;
     clear: none;
-	line-height: normal;
+    line-height: normal;
 }
 
 div.course_list div[id^=course]{
     float:left;
     width:100%;
-	border: 1px solid rgba(238,238,238,1);
+    border: 1px solid rgba(238,238,238,1);
 }
 div.course_list div[id^=course]:hover{
     background : #f7fafa;
 }
 
-
-
 .block_tableau_bord .content h2.title {
-    /* float: left;*/
     margin: 0 0 .5em 0;
     position: relative;
 }
@@ -51,7 +44,6 @@ div.course_list div[id^=course]:hover{
 }
 
 .block_tableau_bord .content {
-    /*margin: 0 20px;*/
 }
 .block_tableau_bord .content .notice {
     margin: 5px 0;
@@ -61,8 +53,6 @@ div.course_list div[id^=course]:hover{
     margin: 0.3em !important;
     padding: 0;
 }
-
-
 
 .block_tableau_bord .coursebox{
     padding: 10px;
@@ -80,9 +70,7 @@ div.course_list div[id^=course]:hover{
     margin-bottom: 5px !important;
 }
 
-
 .block_tableau_bord  .cours-infos div[id^="notif-"]{
-    /*margin-bottom: 5px !important;*/
     margin-top: 10px !important;
 }
 
@@ -94,13 +82,12 @@ div.course_list div[id^=course]:hover{
     border-left : 2px solid #ccc ;
 }
 
-
 .block_tableau_bord  .notif:hover{
     background-color: #f0f0f0;
 }
 
 .block_tableau_bord  .notif .overview {
-    margin : 0 8px 0 0 !important; 
+    margin : 0 8px 0 0 !important;
     float : left;
 }
 
@@ -111,7 +98,6 @@ div.course_list div[id^=course]:hover{
     margin: -8px -8px 0 0;
     text-decoration: none;
 }
-
 
 .notif  a.boutonSupprimer div.delete_notif{
     background:  #ccc;
@@ -124,7 +110,6 @@ div.course_list div[id^=course]:hover{
 .notif:hover a.boutonSupprimer div.delete_notif, .notif a.boutonSupprimer div.delete_notif:hover{
     background:  #d72329;
 }
-
 
 .block_tableau_bord  .bouton_aff{
     float: right;
@@ -139,12 +124,10 @@ div.course_list div[id^=course]:hover{
     position : relative;
 }
 
-
-
 .block_tableau_bord  .coursebox .cours-avancement-global{
     float: left;
     margin: 5px 0 0 4px;
-	padding: 0.3em;
+    padding: 0.3em;
 }
 
 div.collapsibleregioninner[id^=region_histo]{
@@ -160,7 +143,6 @@ div.collapsibleregioninner[id^=region_detaille]{
 /*Canvas pour le graphe d'avancement & prof: */
 canvas[id^=affichage], canvas[id^=affichage-autre-cours], canvas[id^=canvasHisto] {
     position : relative !important;
-
 }
 canvas[id^=canvasHisto] {
     width : 450px !important;
@@ -173,10 +155,7 @@ div.cours-infos {
     word-wrap: break-word;
     white-space:normal !important;
     display : block;
-    /*max-width: 70% !important;*/
-
 }
-
 
 .cours-infos  img {
     padding : 0 5px 3px 0;
@@ -191,15 +170,12 @@ div.formulaire {
     float : right;
 }
 
-
 input.modifier_ordre_cours, input[title="validerCours"]{
     margin: 2px 0 0 0 !important;
-    background: #e5512b !important; 
+    background: #e5512b !important;
     color : #fff !important;
     border-radius: 5px !important;
     border : none !important;
-	
-   
 }
 
 input.modifier_ordre_cours:hover, input[title="validerCours"]:hover{
@@ -218,7 +194,6 @@ input.modifier_ordre_cours:hover, input[title="validerCours"]:hover{
 }
 div.block_tableau_bord div.header{
     background: none !important;
-	
 }
 div.block_tableau_bord div.header H2{
     color : #000 !important;
@@ -227,14 +202,9 @@ div.block_tableau_bord div.header H2{
 }
 
 
-/*//////////////////////////////////////////////*/
-
-
-
 .menu .welcome_area {
     padding : 0 0 10px 0!important;
 }
-
 .menu .welcome_area .profilepicture {
     float: left !important;
     vertical-align: middle;
@@ -251,7 +221,6 @@ div.block_tableau_bord div.header H2{
     display: inline !important;
 }
 
-
 .menu .welcome_area  .welcome_message {
     display: inline !important;
     padding: 0 !important;
@@ -262,7 +231,6 @@ div.block_tableau_bord div.header H2{
 }
 .menu .welcome_title p{
     margin : 0;
-	
     font-size: 27px ;
     line-height: normal;
     padding: 0 5px 4px 0;
@@ -273,13 +241,9 @@ div.block_tableau_bord div.header H2{
     content: ">> ";
 }
 
-
-
 .block_tableau_bord .course_title {
     position: relative;
 }
-
-
 
 .cours-titre {
     font-size: 20px;
@@ -288,8 +252,6 @@ div.block_tableau_bord div.header H2{
     padding-top: 0px !important;
     padding-bottom : 5px;
     border-bottom:solid 1px #EEE;
-	
-
 }
 div.cours-titre div img.cursor{
     border : 3px solid #e5512b ;
@@ -297,9 +259,7 @@ div.cours-titre div img.cursor{
     border-radius : 5px;
     padding : 2px;
     margin-bottom : 2px;
-
 }
-
 
 div.course-button{
     float: right;
@@ -314,7 +274,6 @@ div.course-button{
     color: #fff!important;
     text-transform: uppercase;
     font-weight: bold;
-    /* text-decoration: none; */
 }
 
 div.link-button{
@@ -345,14 +304,10 @@ div.link-button{
     margin-bottom: 2px;
 }
 
-
-
 .block_tableau_bord .move {
     float: left;
     padding: 0 10px 0 0;
 }
-
-
 
 img.iconhelp{
     height: 15px !important;
@@ -361,13 +316,9 @@ img.iconhelp{
     width: 15px !important;
 }
 
-/*/////////////////////////////////////////////////////*/
-
-
 .dir-rtl.editing .block_tableau_bord .move {
     float:right;
     padding: 2px 10px;
-	
 }
 
 .block_tableau_bord .course_list {
@@ -410,19 +361,15 @@ img.iconhelp{
 }
 
 div.block_tableau_bord div div div.block_action{
-    display	:	none !important;
+    display : none !important;
 }
 
-
 /* Pour le bouton des notifications */
-
 .course-img{
     float: left;
     height : 30px;
     width : 150px;
-	
 }
-
 
 .click-notification{ /* déclencheur de l'affichage des notif*/
 cursor : pointer;
@@ -432,33 +379,28 @@ cursor : pointer;
 float: left;
 min-width: 20px;
 width: 20px;
-padding:1px; 
+padding:1px;
 margin : 4px 0 0 -30px;
-font-weight: 600; 
+font-weight: 600;
 font-size: 12px;
-text-align: center; 
-background: #d72329; 
-border: 1px solid #FFF; 
+text-align: center;
+background: #d72329;
+border: 1px solid #FFF;
 border-radius: 4px;
 }
 .notification  a{
-color: #fff !important; 
+color: #fff !important;
 }
-
 
 /* Modification du custom.css de l'ead */
 /* ----------------------------------- */
-.block_course_overview .coursebox.cours-titre { 
-/* A la base pas de .block_course_overview .coursebox*/	
+.block_course_overview .coursebox.cours-titre {
+/* A la base pas de .block_course_overview .coursebox*/
 /*Changement*/
 padding-left : 5px !important;
 padding-top : 2px !important;
 margin-bottom: 5px !important;
-	
 }
-
-
-
 
 @media only screen and (max-width : 980px) {
     canvas[id^=canvasHisto] {
@@ -468,5 +410,3 @@ margin-bottom: 5px !important;
     }
 
 }
-
-

@@ -22,33 +22,33 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Display overview for courses
  *
  * @param array $courses courses for which overview needs to be shown
  * @return array html overview
  */
- 
 
 function block_tableau_bord_get_overviews($courses) {
     $notification = array();
-    if ($modules=get_plugin_list('mod')) {
+    if ($modules = get_plugin_list('mod')) {
         if (defined('MAX_MODINFO_CACHE_SIZE') && MAX_MODINFO_CACHE_SIZE > 0 && count($courses) > MAX_MODINFO_CACHE_SIZE) {
             $batches = array_chunk($courses, MAX_MODINFO_CACHE_SIZE, true);
         } else {
             $batches = array($courses);
         }
 
-		// Pour chaque cours
+        // Pour chaque cours.
         foreach ($batches as $courses) {
-			// Pour chaque type d'activite existante on recherche si le cours necessite des notifications
-            foreach ($modules as $mod=>$fname) {
-				// ajoute les notifications dans le tableau $notification
-				creer_notif($courses,$notification,$mod);
+            // Pour chaque type d'activite existante on recherche si le cours necessite des notifications.
+            foreach ($modules as $mod => $fname) {
+                // Ajoute les notifications dans le tableau $notification.
+                creer_notif($courses, $notification, $mod);
             }
         }
     }
-
     return $notification;
 }
 
@@ -118,12 +118,11 @@ function block_tableau_bord_get_child_shortnames($courseid) {
  * @return int maximum number of courses
  */
 function block_tableau_bord_get_max_user_courses() {
-    // Get block configuration
-	global $CFG;
+    // Get block configuration.
     $config = get_config('block_tableau_bord');
     $limit = $config->defaultmaxcourses;
 
-    // If max course is not set then try get user preference
+    // If max course is not set then try get user preference.
     if (empty($config->forcedefaultmaxcourses)) {
         $limit = get_user_preferences('tableau_bord_number_of_courses', $limit);
     }
@@ -134,18 +133,15 @@ function block_tableau_bord_get_max_user_courses() {
  * Return sorted list of user courses
  *
  * @return array list of sorted courses and count of courses.
- 
-	Renvoi la liste des cours dans l'ordre defini par les preferences de l'utilisateur ($USER->preferences)
+ * Renvoi la liste des cours dans l'ordre defini par les preferences de l'utilisateur ($USER->preferences)
  */
 function block_tableau_bord_get_sorted_courses() {
     global $USER;
 
-    $limit = block_tableau_bord_get_max_user_courses();
-
     $courses = enrol_get_my_courses();
     $site = get_site();
 
-    if (array_key_exists($site->id,$courses)) {
+    if (array_key_exists($site->id, $courses)) {
         unset($courses[$site->id]);
     }
 
@@ -162,7 +158,7 @@ function block_tableau_bord_get_sorted_courses() {
     if (is_enabled_auth('mnet')) {
         $remotecourses = get_my_remotecourses();
     }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
+    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses.
     foreach ($remotecourses as $id => $val) {
         $remoteid = $val->remoteid * -1;
         $val->id = $remoteid;
@@ -171,116 +167,66 @@ function block_tableau_bord_get_sorted_courses() {
 
     $order = array();
     if (!is_null($usersortorder = get_user_preferences('tableau_bord_course_order'))) {
-        $order = unserialize($usersortorder);
+        $order = explode (",", $usersortorder);
     }
-	
+
+    $update = false;
     $sortedcourses = array();
-    $counter = 0;
-    // Get courses in sort order into list.
-    foreach ($order as $key => $cid) {
-        if (($counter >= $limit) && ($limit != 0)) {
-            break;
-        }
-		
+    foreach ($order as $cid) {
+        $ind = intval($cid);
         // Make sure user is still enroled.
-        if (isset($courses[$cid])) {
-            $sortedcourses[$cid] = $courses[$cid];
-            $counter++;
+        if (isset($courses[$ind])) {
+            $sortedcourses[] = $courses[$ind];
+            $c = $courses[$ind];
+            $c->inplace = true;
+            $courses[$ind] = $c;
+        } else {
+            $update = true;
         }
     }
 
-    // Append unsorted courses if limit allows
+    // Append unsorted courses if limit allows.
     foreach ($courses as $c) {
-        if (($limit != 0) && ($counter >= $limit)) {
-            break;
-        }
-        if (!in_array($c->id, $order)) {
-            $sortedcourses[$c->id] = $c;
-            $counter++;
+        if (!isset($c->inplace)) {
+            $sortedcourses[] = $c;
+            $update = true;
         }
     }
 
-    // From list extract site courses for overview
+    // From list extract site courses for overview.
     $sitecourses = array();
     foreach ($sortedcourses as $key => $course) {
         if ($course->id > 0) {
             $sitecourses[$key] = $course;
         }
     }
+
+    if ($update) {
+        $neworder = "";
+        foreach ($sortedcourses as $course) {
+            $neworder .= $course->id . ",";
+        }
+
+        if (strlen($neworder) > 0) {
+            $neworder = substr($neworder, 0, strlen($neworder) - 1);
+            set_user_preference('tableau_bord_course_order', $neworder);
+        } else {
+            unset_user_preference('tableau_bord_course_order');
+        }
+    }
+
     return array($sortedcourses, $sitecourses, count($courses));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Tri les cours par ordre alphabetique
-function block_tableau_bord_get_sorted_courses_alphabetique() {
+// Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop.
+function mode_edition_cours() {
     global $USER;
-	
-    $limit = block_tableau_bord_get_max_user_courses();
-
-    $courses = enrol_get_my_courses('id, shortname, fullname, modinfo, sectioncache');
-    $site = get_site();
-
-    if (array_key_exists($site->id,$courses)) {
-        unset($courses[$site->id]);
-    }
-
-    foreach ($courses as $c) {
-        if (isset($USER->lastcourseaccess[$c->id])) {
-            $courses[$c->id]->lastaccess = $USER->lastcourseaccess[$c->id];
-        } else {
-            $courses[$c->id]->lastaccess = 0;
-        }
-    }
-
-    // Get remote courses.
-    $remotecourses = array();
-    if (is_enabled_auth('mnet')) {
-        $remotecourses = get_my_remotecourses();
-    }
-    // Remote courses will have -ve remoteid as key, so it can be differentiated from normal courses
-    foreach ($remotecourses as $id => $val) {
-        $remoteid = $val->remoteid * -1;
-        $val->id = $remoteid;
-        $courses[$remoteid] = $val;
-    }
-
-    $order = array();
-    if (!is_null($usersortorder = get_user_preferences('course_overview_course_order'))) {
-        $order = unserialize($usersortorder);
-    }
-
-	function comparer_cours($a, $b){
-		return $a->fullname > $b->fullname;
-	}
-
-	// Tri le tableau $courses dans l'ordre defini par la fonction comparer_cours
-	$test = usort($courses, 'comparer_cours');
-	$ind = -1;
-    $sitecourses = array();
-    foreach ($courses as $key => $course) {
-        if ($course->id > 0) {
-			$ind++;
-            $courses[$key] = $course;
-			// Fabrique le tableau d'ordre des cours present dans $USER->preferences
-			$tmp = intval($course->id);
-			$order[$ind] = $tmp;
-			
-        }
-    }
-	
-	// Applique le nouveau changement aux preferences de l'utilisateur
-	block_tableau_bord_update_myorder($order);
+    // Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree).
+    $USER->userediting_course = true;
 }
 
-// Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop
-function mode_edition_cours(){
-	global $USER;
-	// Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree)
-	$USER->userediting_course = true;
-}
-
-function quitter_edition_cours(){
-	global $USER;
-	// Passe la variable d'edition a faux
-	$USER->userediting_course = false;
+function quitter_edition_cours() {
+    global $USER;
+    // Passe la variable d'edition a faux.
+    $USER->userediting_course = false;
 }
