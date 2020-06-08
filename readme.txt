@@ -1,5 +1,7 @@
 Moodle - block_tableau_bord
 
+See doc :  https://poleumdev.github.io/moodle-block_tableau_bord/ 
+
     Fonctionnement
     ==============
 
