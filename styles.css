@@ -1,6 +1,12 @@
 /* add jjupin Masquer bouton modifier ordre cours  et tabs annulalisation */
-form#ordre_cours {display:none;}
-span.nouveautetdb{font-size: 18px;color:#333;margin-bottom:10px;}
+form#ordre_cours {
+    display:none;
+}
+span.nouveautetdb {
+    font-size: 18px;
+    color:#333;
+    margin-bottom:10px;
+}
 
 .block_tableau_bord div#tabs {
     float:left;
