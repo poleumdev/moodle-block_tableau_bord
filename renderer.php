@@ -141,7 +141,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 list($avancementglobal, $avancementdetaille) = $this->afficher_avt_prof($course);
             } else if ($roleutilisateur == "student") {
                 // Recupere les deux types d'avancement dans deux variables differentes.
-                list($avancementglobal, $avancementdetaille) = $this->afficher_avt_etu($course);
+                if ($course->enablecompletion == 1) {
+                    list($avancementglobal, $avancementdetaille) = $this->afficher_avt_etu($course);
+                }
             }
 
             // Affiche l'avancement global s'il existe.
