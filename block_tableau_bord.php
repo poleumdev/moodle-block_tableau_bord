@@ -118,13 +118,17 @@ class block_tableau_bord extends block_base {
                         }
                     }
                     $sortedcourses = array();
+                    $cpt = 0;
                     foreach ($arronglet as $onglet) {
                         foreach ($onglet as $course) {
                             $sortedcourses[] = $course;
                         }
-                    }
-                    foreach ($horsonglet as $course) {
-                        $sortedcourses[] = $course;
+                        if ($cpt == 0) {
+                            $cpt++;
+                            foreach ($horsonglet as $course) {
+                                $sortedcourses[] = $course;
+                            }
+                        }
                     }
                 }
                 $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews, $lstonglet);

@@ -138,7 +138,7 @@ function block_tableau_bord_get_max_user_courses() {
 function block_tableau_bord_get_sorted_courses() {
     global $USER;
 
-    $courses = enrol_get_my_courses();
+    $courses = enrol_get_my_courses("enablecompletion");
     $site = get_site();
 
     if (array_key_exists($site->id, $courses)) {
