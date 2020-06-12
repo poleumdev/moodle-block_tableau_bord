@@ -41,11 +41,13 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      *
      * @param array $courses list of courses in sorted order
      * @param array $overviews list of course overviews
+     * @param array $arronglet list of tab
      * @return string html to be displayed in tableau_bord block
      */
-    public function tableau_bord($courses, $overviews) {
+    public function tableau_bord($courses, $overviews, $arraydate) {
         global $CFG, $USER;
         $html = '<script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/Chart.min.js'.'"></script>
+                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/tablist.min.js'.'"></script>
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/graphes.js'.'"></script>
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/xhr.js'.'"></script>';
 
@@ -53,70 +55,32 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         $courseordernumber = 0;
         $maxcourses = count($courses);
 
-        $arraydate = array(); // Sera complété à chaque nouvelle année trouvée.
-        // On parcours les cours pour récupérer toutes les "années" différentes.
-        foreach ($courses as $key => $course) {
-            $coursefullname = $course->fullname;
-            $pattern = "/\[(20[0-9]{2}-20[0-9]{2})\]/";
-
-            if (preg_match($pattern, $coursefullname, $matches)) {
-                $arraydate[$matches[1]] = $matches[1]; // Si on trouve on l'ajoute au tab.
-            }
-        }
         // Ajouter une liste HTML avec les dates (pour la construction des onglets).
         if (!empty($arraydate)) {
-            arsort($arraydate);
-            $html .= '<div id="tabs">';
-            $html .= '<ul class="tabs">';
-            // Pour chaque "année" on ajoute une ligne, qui sera avec jQuery transformé en onglet.
+            $html .= '<div id="LMtabs">';
+            $html .= '<ul role="ongletlist">';
+            $cpt = 1;
             foreach ($arraydate as $date) {
-                $html .= '<li><a href="#tabs-'.$date.'" class="tab'.$date.'">'.$date.'</a></li>';
+                $idpan = 'panneau-'.$cpt++;
+                $html .= '<li role="tab" aria-controls="'. $idpan .'">' . $date . '</li>';
             }
-            $html .= "</ul>";
-
-            // Code jQuery.
-            $html .= '<script>window.onload = function() {';
-            foreach ($arraydate as $date) { // Pour chaque "année, pour les rassembler dans un div".
-                $html .= '$( ".'.$date.'" ).wrapAll( "<div id=\'tabs-'.$date.'\' />");';
-            }
-            $html .= '$( "#tabs" ).tabs();';
-
-            // Ajout d'un texte pour prévenir de la nouveauté.
-            $nvxtxt = 'Les cours sont  triés par année universitaire dans des onglets';
-            $html .= '$(".welcome_title").append("<span class=\"nouveautetdb\">'.$nvxtxt.'</span>");';
-            $html .= '};</script>';
+            $html .= '</ul>';
+            $html .= '</div><br/>';
         }
 
+        $cpt = 1;
+        $reperedate = "";
         foreach ($courses as $key => $course) {
-            /* add jjupin "Onglets annualisation"
-             * Pour chaque cours, ajouter une classe en fonction de l'année pour créer des onglets
-             * On parse chaque nom de cours pour récuperer l'année => [20xx-20xx]
-             */
             $coursefullname = $course->fullname;
-            $courseclass = ""; // Sera complété si une date est trouvée.
-            $pattern = "/\[(20[0-9]{2}-20[0-9]{2})\]/";
-
-            if (preg_match($pattern, $coursefullname, $matches)) {
-                $courseclass = $matches[1];
-            } else {
-                // Sinon on donne l'année en cours (la plus élevée = la 1e dans le tableau qui a été trié).
-                $courseclass = reset($arraydate);
-            }
-            // End add jjupin.
-
-            // Coursebox -> le bloc d'un cours.
-            // Add jjupin 31/01/17 => ajouter une classe CSS si le cours est masqué (le griser).
-            if (empty($course->visible)) {
-                $courseclass .= ' course_not_visible ';
-            }
-            // End add jjupin 31/01/17.
-
-            /* Defini les classes des cours en fonction de la valeur presente dans le cookie s'il existe.
-             * Sinon defini par defaut la classe coursebox qui correspond a un affichage des cours en liste*/
-            if (!empty($_COOKIE['disposition'])) {
-                $html .= $this->output->box_start($_COOKIE['disposition']." ".$courseclass, "course-{$course->id}");
-            } else {
-                $html .= $this->output->box_start('coursebox '.$courseclass, "course-{$course->id}");
+            $debname = substr($coursefullname, 0, 9);
+            if ($coursefullname[0] == '[' && strcmp($reperedate, $debname) != 0) {
+                if (!empty($reperedate)) {
+                    $html .= '</div>';
+                }
+                $reperedate = $debname;
+                $idpan = 'panneau-'.$cpt++;
+                $html .= '<div class="clear"></div>';
+                $html .= '<div role="tabpanel" id="'. $idpan .'">';
             }
 
             $html .= '<div class="cours-titre">';
@@ -217,6 +181,31 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $html .= '<div class="clear"></div>';
             $html .= $this->output->box_end(); // Fin du coursebox.
         }
+        if ($cpt > 1) {
+            $html .= '</div>';
+            // Code js.
+            $html .= '<script>var list = document.querySelector( \'[role="ongletlist"]\' );';
+            $html .= 'var tablist = new window.Tablist( list );';
+            $html .= 'tablist.on( \'show\', function( tab, tabPanel ){';
+            $html .= 'tab.style.backgroundColor = "#C0C0C0";';
+            $html .= 'tab.style.color = "#000000";';
+            $html .= '});';
+            $html .= 'tablist.on( \'hide\', function( tab, tabPanel ){';
+            $html .= 'tab.style.backgroundColor = "#FFFFFF";';
+            $html .= 'tab.style.color = "#8080FF";';
+            $html .= '});';
+            $html .= 'tablist.mount();';
+
+            $html .= "$(document).ready(function() {
+          $('.LMnav-toggle').click(function(){
+            var collapse__content__selector = $(this).attr('href');
+            var toggle__switch = $(this);
+            $(collapse__content__selector).toggle();
+          });
+        });";
+
+            $html .= '</script>';
+        }
         return html_writer::tag('div', $html, array('class' => 'course_list', 'id' => 'test'));
     }
 
@@ -272,64 +261,15 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      * @return bool if true, return the HTML as a string, rather than printing it.
      */
     protected function collapsible_region($contents, $classes, $id, $caption, $userpref = '', $default = false) {
-        $output  = $this->collapsible_region_start($classes, $id, $caption, $userpref, $default);
+        $output = '<div><a href="#'.$id.'" class="LMnav-toggle">'.$caption.'</a></div>';
+        $output .= '<div id="'.$id.'" style="display:none">';
         $output .= $contents;
-        $output .= $this->collapsible_region_end();
-
+        $output .= '</div>';
         return $output;
     }
 
     /**
-     * Print (or return) the start of a collapsible region, that has a caption that can
-     * be clicked to expand or collapse the region. If JavaScript is off, then the region
-     * will always be expanded.
-     *
-     * @param string $classes class names added to the div that is output.
-     * @param string $id id added to the div that is output. Must not be blank.
-     * @param string $caption text displayed at the top. Clicking on this will cause the region to expand or contract.
-     * @param string $userpref the name of the user preference that stores the user's preferred default state.
-     *      (May be blank if you do not wish the state to be persisted.
-     * @param bool $default Initial collapsed state to use if the user_preference it not set.
-     * @return bool if true, return the HTML as a string, rather than printing it.
-     */
-    protected function collapsible_region_start($classes, $id, $caption, $userpref = '', $default = false) {
-        // Work out the initial state.
-        if (!empty($userpref) and is_string($userpref)) {
-            user_preference_allow_ajax_update($userpref, PARAM_BOOL);
-            $collapsed = get_user_preferences($userpref, $default);
-        } else {
-            $collapsed = $default;
-            $userpref = false;
-        }
-
-        if ($collapsed) {
-            $classes .= ' collapsed';
-        }
-
-        $output = '';
-        $output .= '<div id="' . $id . '" class="collapsibleregion ' . $classes . '">';
-        $output .= '<div id="' . $id . '_sizer">';
-        $output .= '<div id="' . $id . '_caption" class="collapsibleregioncaption">';
-        $output .= $caption . ' ';
-        $output .= '</div><div id="' . $id . '_inner" class="collapsibleregioninner">';
-        $this->page->requires->js_init_call('M.block_tableau_bord.collapsible',
-                                        array($id, $userpref, get_string('clicktohideshow')));
-
-        return $output;
-    }
-
-    /**
-     * Close a region started with print_collapsible_region_start.
-     *
-     * @return string return the HTML as a string, rather than printing it.
-     */
-    protected function collapsible_region_end() {
-        $output = '</div></div></div>';
-        return $output;
-    }
-
-    /**
-     * Cretes html for welcome area
+     * Creates html for welcome area
      *
      * @param int $msgcount number of messages
      * @return string html string for welcome area.
@@ -484,6 +424,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         $avancementdetaille .= $this->collapsible_region($histogramme, '', 'region_histo_'.$course->id,
                     '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').'" alt="Avancement icon" /> '.
                     '<b>'.get_string('seeprogressteacher', 'block_tableau_bord').'</b>', '', true);
+
         // Retourne les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
     }

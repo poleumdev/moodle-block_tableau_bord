@@ -1,12 +1,6 @@
 /* add jjupin Masquer bouton modifier ordre cours  et tabs annulalisation */
-form#ordre_cours {
-    display:none;
-}
-span.nouveautetdb {
-    font-size: 18px;
-    color:#333;
-    margin-bottom:10px;
-}
+form#ordre_cours {display:none;}
+span.nouveautetdb{font-size: 18px;color:#333;margin-bottom:10px;}
 
 .block_tableau_bord div#tabs {
     float:left;
@@ -120,7 +114,7 @@ div.course_list div[id^=course]:hover{
 .block_tableau_bord  .bouton_aff{
     float: right;
     text-align: center;
-    margin: 2px;
+    margin: 2px;*
 }
 
 .block_tableau_bord  .coursebox .contenu_cours{
@@ -176,7 +170,7 @@ div.formulaire {
     float : right;
 }
 
-input.modifier_ordre_cours, input[title="validerCours"] {
+input.modifier_ordre_cours, input[title="validerCours"]{
     margin: 2px 0 0 0 !important;
     background: #e5512b !important;
     color : #fff !important;
@@ -206,6 +200,7 @@ div.block_tableau_bord div.header H2{
     font-size : 2em !important;
     text-transform: none !important;
 }
+
 
 .menu .welcome_area {
     padding : 0 0 10px 0!important;
@@ -239,6 +234,7 @@ div.block_tableau_bord div.header H2{
     font-size: 27px ;
     line-height: normal;
     padding: 0 5px 4px 0;
+    //background : #eee;
     color :  #0088CC;
 }
 .menu .welcome_title p:before{
@@ -327,7 +323,7 @@ img.iconhelp{
 
 .block_tableau_bord .course_list {
     width: 100%;
-    float: left;
+    float : left;
 }
 
 /*Permet d'afficher les activites en dessous du titre du cours */
@@ -345,14 +341,8 @@ img.iconhelp{
 .block_tableau_bord .activity_overview {
     padding: 2px;
 }
-.block_tableau_bord .activity_overview img.iconlarge {
-    vertical-align: text-bottom;
-    margin-right: 6px;
-}
-.dir-rtl .block_tableau_bord .activity_overview img.iconlarge {
-    margin-left: 6px;
-    margin-right: 0;
-}
+.block_tableau_bord .activity_overview img.iconlarge { vertical-align: text-bottom; margin-right: 6px; }
+.dir-rtl .block_tableau_bord .activity_overview img.iconlarge { margin-left: 6px; margin-right: 0;}
 
 .block_tableau_bord .singleselect {
     text-align: left;
@@ -382,39 +372,65 @@ div.block_tableau_bord div div div.block_action{
 }
 
 .click-notification{ /* déclencheur de l'affichage des notif*/
-    cursor : pointer;
+cursor : pointer;
 }
 
 .notification {
-    float: left;
-    min-width: 20px;
-    width: 20px;
-    padding:1px;
-    margin : 4px 0 0 -30px;
-    font-weight: 600;
-    font-size: 12px;
-    text-align: center;
-    background: #d72329;
-    border: 1px solid #FFF;
-    border-radius: 4px;
+float: left;
+min-width: 20px;
+width: 20px;
+padding:1px;
+margin : 4px 0 0 -30px;
+font-weight: 600;
+font-size: 12px;
+text-align: center;
+background: #d72329;
+border: 1px solid #FFF;
+border-radius: 4px;
 }
-.notification a {
-    color: #fff !important;
+.notification  a{
+color: #fff !important;
 }
 
 /* Modification du custom.css de l'ead */
 /* ----------------------------------- */
 .block_course_overview .coursebox.cours-titre {
-    padding-left : 5px !important;
-    padding-top : 2px !important;
-    margin-bottom: 5px !important;
+/* A la base pas de .block_course_overview .coursebox*/
+/*Changement*/
+padding-left : 5px !important;
+padding-top : 2px !important;
+margin-bottom: 5px !important;
 }
 
 @media only screen and (max-width : 980px) {
     canvas[id^=canvasHisto] {
-        width: 100% !important;
-        height: auto !important;
-        max-width: 300px !important;
+        width : 100% !important;
+        height : auto !important;
+        max-width : 300px !important;
     }
 
+}
+
+[role="tabpanel"][aria-hidden="true"] {
+  display: none;
+}
+
+[role="tab"] {
+  opacity: 0.7;
+}
+
+#LMtabs ul li {
+    display:inline-block;
+    float:left;
+    height:24px;
+    min-width:80px;
+    text-align:center;
+    line-height: 22px;
+    padding:0 8px 0 8px;
+    margin: 1px 3px 0px 5px;
+    border: 1px solid gray;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background:#FFFFFF;
+    color:#8080FF;
 }

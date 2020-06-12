@@ -99,8 +99,6 @@ function creer_notif($courses, &$notification, $mod) {
         $strnolatesubmissions = get_string('nolatesubmissions', 'block_tableau_bord');
         $strassignment = get_string('modulenameassign', 'block_tableau_bord');
 
-        // We do all possible database work here *outside* of the loop to ensure this scales.
-        list($sqlassignmentids, $assignmentidparams) = $DB->get_in_or_equal($assignmentids);
         $unmarkedsubmissions = null;
 
         foreach ($assignments as $assignment) {
