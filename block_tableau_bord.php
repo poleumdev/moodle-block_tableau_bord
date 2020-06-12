@@ -89,11 +89,45 @@ class block_tableau_bord extends block_base {
                 }
                 // Load script Ajax.
                 $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
-
                 $this->content->text .= $renderer->render_from_template('block_tableau_bord/lstcourse',
                                             array('std' => $std, 'wroot' => $CFG->wwwroot, 'userid' => $USER->id), null);
             } else {
-                $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews);
+                // List onglet.
+                $lstonglet = array();
+                foreach ($sortedcourses as $course) {
+                    $coursefullname = $course->fullname;
+                    $pattern = "/\[(20[0-9]{2}-20[0-9]{2})\]/";
+                    if (preg_match($pattern, $coursefullname, $matches)) {
+                        $lstonglet[$matches[1]] = $matches[1];
+                    }
+                }
+                $arronglet = array();
+                if (count($lstonglet) > 0) {
+                    rsort($lstonglet);
+                    foreach ($lstonglet as $ongl) {
+                        $arronglet[$ongl] = array();
+                    }
+                    $horsonglet = array();
+                    foreach ($sortedcourses as $course) {
+                        $coursefullname = $course->fullname;
+                        $pattern = "/\[(20[0-9]{2}-20[0-9]{2})\]/";
+                        if (preg_match($pattern, $coursefullname, $matches)) {
+                            $arronglet[$matches[1]][] = $course;
+                        } else {
+                            $horsonglet[] = $course;
+                        }
+                    }
+                    $sortedcourses = array();
+                    foreach ($arronglet as $onglet) {
+                        foreach ($onglet as $course) {
+                            $sortedcourses[] = $course;
+                        }
+                    }
+                    foreach ($horsonglet as $course) {
+                        $sortedcourses[] = $course;
+                    }
+                }
+                $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews, $lstonglet);
                 $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
             }
         }
