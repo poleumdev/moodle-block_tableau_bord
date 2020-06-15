@@ -147,7 +147,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             }
 
             // Affiche l'avancement global s'il existe.
-            $html .= '<div class="cours-avancement-global">';
+            $html .= '<div class="cours-avancement-global" style="float:left;height:160px;">';
             if ($avancementglobal !== "") {
                 $html .= $avancementglobal;
                 $html .= '<div class="clear"></div>';
