@@ -14,50 +14,9 @@ div.course_not_visible {
 }
 /* end add jjupin 31/01/17 */
 
-.block_tableau_bord  {
-    float: left;
-    width : 100% !important;
-    padding: 10px;
-    vertical-align: middle;
-    border-collapse: separate;
-    clear: none;
-    line-height: normal;
-}
 
-div.course_list div[id^=course]{
-    float:left;
-    width:100%;
-    border: 1px solid rgba(238,238,238,1);
-}
-div.course_list div[id^=course]:hover{
-    background : #f7fafa;
-}
 
-.block_tableau_bord .content h2.title {
-    margin: 0 0 .5em 0;
-    position: relative;
-}
 
-.block_tableau_bord .coursechildren {
-    font-weight: normal;
-    font-style: italic;
-}
-
-.block_tableau_bord .content {
-}
-.block_tableau_bord .content .notice {
-    margin: 5px 0;
-}
-
-.path-my .coursebox {
-    margin: 0.3em !important;
-    padding: 0;
-}
-
-.block_tableau_bord .coursebox{
-    padding: 10px;
-    width: auto;
-}
 
 /* Pour que le formulaire et le bouton de la grille soient sur la même ligne */
 .block_tableau_bord  .bouton{
@@ -76,7 +35,6 @@ div.course_list div[id^=course]:hover{
 
 /* Division d'une seule notification */
 .block_tableau_bord  .notif{
-    float : left;
     margin: 5px 10px 5px 30px;
     padding-left : 5px;
     border-left : 2px solid #ccc ;
@@ -149,22 +107,6 @@ canvas[id^=canvasHisto] {
     height : auto !important;
 }
 
-div.cours-infos {
-    float: left;
-    padding : 20px 5px 5px 10px;
-    word-wrap: break-word;
-    white-space:normal !important;
-    display : block;
-}
-
-.cours-infos  img {
-    padding : 0 5px 3px 0;
-    backgournd : red;
-}
-
-.cours-infos div {
-    white-space:normal !important;
-}
 
 div.formulaire {
     float : right;
@@ -245,36 +187,7 @@ div.block_tableau_bord div.header H2{
     position: relative;
 }
 
-.cours-titre {
-    font-size: 20px;
-    font-weight: bold;
-    padding-left: 0.4em;
-    padding-top: 0px !important;
-    padding-bottom : 5px;
-    border-top:solid 1px #EEE;
-}
-div.cours-titre div img.cursor{
-    border : 3px solid #e5512b ;
-    height : 18px;
-    border-radius : 5px;
-    padding : 2px;
-    margin-bottom : 2px;
-}
 
-div.course-button{
-    float: right;
-    width: 120px;
-    margin: 15px 10px 0px 10px;
-    padding: 10px;
-    text-align: center;
-    background: #0088CC;
-    border-radius: 5px;
-}
-.course-button a {
-    color: #fff!important;
-    text-transform: uppercase;
-    font-weight: bold;
-}
 
 div.link-button{
     margin: 5px 5px 15px 5px;
@@ -394,13 +307,7 @@ color: #fff !important;
 
 /* Modification du custom.css de l'ead */
 /* ----------------------------------- */
-.block_course_overview .coursebox.cours-titre {
-/* A la base pas de .block_course_overview .coursebox*/
-/*Changement*/
-padding-left : 5px !important;
-padding-top : 2px !important;
-margin-bottom: 5px !important;
-}
+
 
 @media only screen and (max-width : 980px) {
     canvas[id^=canvasHisto] {
