@@ -14,8 +14,10 @@ div.course_not_visible {
 }
 /* end add jjupin 31/01/17 */
 
-
-
+/* Cursor on tabs (same as buttons) / Add jjupin 18/02/20. */
+#LMtabs li{
+    cursor: pointer;
+}
 
 
 /* Pour que le formulaire et le bouton de la grille soient sur la même ligne */

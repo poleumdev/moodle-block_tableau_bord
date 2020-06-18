@@ -168,7 +168,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $html .= "</div>"; // Fin: avancement global.
 
             // AFFICHER AVANCEMENT  DETAILLE & NOTIFICATIONS.
-            $html .= '<div class="cours-infos col-lg-7 col-md-5">';
+            $html .= '<div class="cours-infos col-md-5">';
 
             // Avancement ou si acucune activité.
             if ($nbact > 0) {
@@ -184,7 +184,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $courseordernumber++;
             // Bouton pour acceder au cours.
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
-            $html .= '<div class="col-lg-2 col-md-4 mb-2 mt-2"><a class="btn btn-primary btn-lg w-100" href="'.$courseurl.'">' .
+            $html .= '<div class="col-md-4 mb-2 mt-2"><a class="btn btn-primary btn-lg w-100" href="'.$courseurl.'">' .
                     get_string('reach', 'block_tableau_bord').' </a></div>';
 
             $html .= "</div>"; // Fin du cours-contenu.
