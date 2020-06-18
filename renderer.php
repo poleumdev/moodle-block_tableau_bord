@@ -55,18 +55,27 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         $courseordernumber = 0;
         $maxcourses = count($courses);
 
+
+        // Le contenu du plugin TDB.
+        $html .= '<div class="tdb-container container-fluid">'; 
+
         // Ajouter une liste HTML avec les dates (pour la construction des onglets).
         if (!empty($arraydate)) {
-            $html .= '<div id="LMtabs">';
-            $html .= '<ul role="ongletlist">';
+            $html .= '<div id="LMtabs" class="row w-100">';
+            $html .= '<ul role="ongletlist" class="mb-0">';
             $cpt = 1;
             foreach ($arraydate as $date) {
                 $idpan = 'panneau-'.$cpt++;
                 $html .= '<li role="tab" aria-controls="'. $idpan .'">' . $date . '</li>';
             }
             $html .= '</ul>';
-            $html .= '</div><br/>';
+            $html .= '</div>';
         }
+
+        // Div qui contient la liste des cours TDB.
+        $html .= '<div class="cours-liste col-12">'; 
+        $html .= '<div class="row-fluid no-gutters">'; 
+        
 
         $cpt = 1;
         $reperedate = "";
@@ -79,11 +88,16 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 }
                 $reperedate = $debname;
                 $idpan = 'panneau-'.$cpt++;
-                $html .= '<div class="clear"></div>';
                 $html .= '<div role="tabpanel" id="'. $idpan .'">';
             }
-
-            $html .= '<div class="cours-titre">';
+                
+    
+            
+            // Div qui contient chaque element d'un cours dans le TDB.
+            $html .= '<div class="cours-contenu row-fluid w-100 border">'; 
+            
+            // Titre du cours.
+            $html .= '<h3 class="cours-titre col-md-12 p-3">';
             // Add jjupin 31/01/17 => ajouter une information si le cours est masqué.
             if (empty($course->visible)) {
                 $html .= '(COURS MASQUÉ) ';
@@ -108,7 +122,10 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                                         . ' (' . format_string($course->hostname) . ')', 2, 'title');
             }
 
-            $html .= html_writer::end_tag('div');
+             $html .= "</h3>";  // Fin: Titre du cours.
+
+            
+     
 
             // RECUPERER  AVANCEMENT.
             // Recuperation du role de l'utilisateur dans le cours ainsi que  les informations concernant les activites du cours.
@@ -147,15 +164,14 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             }
 
             // Affiche l'avancement global s'il existe.
-            $html .= '<div class="cours-avancement-global" style="float:left;height:160px;">';
+            $html .= '<div class="cours-avancement-global  col-md-3" >';
             if ($avancementglobal !== "") {
                 $html .= $avancementglobal;
-                $html .= '<div class="clear"></div>';
             }
-            $html .= html_writer::end_tag('div');
+            $html .= "</div>"; // Fin: avancement global.
 
             // AFFICHER AVANCEMENT  DETAILLE & NOTIFICATIONS.
-            $html .= '<div class="cours-infos">';
+            $html .= '<div class="cours-infos col-lg-7 col-md-5">';
 
             // Avancement ou si acucune activité.
             if ($nbact > 0) {
@@ -166,25 +182,25 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             if (isset($overviews[$course->id])) {
                 $html .= $this->afficher_notification($course, $overviews);
             }
-            $html .= html_writer::end_tag('div'); // Fin de cours-infos.
 
-            if (!empty($config->showchildren) && ($course->id > 0)) {
-                // List children here.
-                if ($children = block_tableau_bord_get_child_shortnames($course->id)) {
-                    $html .= html_writer::tag('span', $children, array('class' => 'coursechildren'));
-                }
-            }
+
+           
+             $html .= "</div>"; // // Fin: cours-infos.
 
             $courseordernumber++;
             // Bouton pour acceder au cours.
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
-            $html .= '<div class="course-button"><a href="'.$courseurl.'">' .
+            $html .= '<div class="col-lg-2 col-md-4 mb-2 mt-2"><a class="btn btn-primary btn-lg w-100" href="'.$courseurl.'">' .
                     get_string('reach', 'block_tableau_bord').' </a></div>';
-            $html .= '<div class="clear"></div>';
-            $html .= $this->output->box_end(); // Fin du coursebox.
+           
+           
+           
+            $html .= "</div>"; // Fin du cours-contenu.
         }
+        
+         $html .= "</div></div>"; // Fin du cours-liste (2 div).
+        
         if ($cpt > 1) {
-            $html .= '</div>';
             // Code js.
             $html .= '<script>var list = document.querySelector( \'[role="ongletlist"]\' );';
             $html .= 'var tablist = new window.Tablist( list );';
@@ -208,7 +224,10 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
             $html .= '</script>';
         }
-        return html_writer::tag('div', $html, array('class' => 'course_list', 'id' => 'test'));
+        
+        $html .= '</div>'; // Fin: tdb-container.
+        
+        return $html;
     }
 
     /**
