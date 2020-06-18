@@ -55,9 +55,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         $courseordernumber = 0;
         $maxcourses = count($courses);
 
-
         // Le contenu du plugin TDB.
-        $html .= '<div class="tdb-container container-fluid">'; 
+        $html .= '<div class="tdb-container container-fluid">';
 
         // Ajouter une liste HTML avec les dates (pour la construction des onglets).
         if (!empty($arraydate)) {
@@ -73,29 +72,31 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         }
 
         // Div qui contient la liste des cours TDB.
-        $html .= '<div class="cours-liste col-12">'; 
-        $html .= '<div class="row-fluid no-gutters">'; 
-        
+        $html .= '<div class="cours-liste col-12">';
+        $html .= '<div class="row-fluid no-gutters">';
 
         $cpt = 1;
         $reperedate = "";
+        $pattern = "/\[(20[0-9]{2}-20[0-9]{2})\]/";
+
         foreach ($courses as $key => $course) {
             $coursefullname = $course->fullname;
-            $debname = substr($coursefullname, 0, 9);
-            if ($coursefullname[0] == '[' && strcmp($reperedate, $debname) != 0) {
+            $dated = "";
+            if (preg_match($pattern, $coursefullname, $matches)) {
+                $dated = $matches[1];
+            }
+            if ($dated != "" && strcmp($reperedate, $dated) != 0) {
                 if (!empty($reperedate)) {
                     $html .= '</div>';
                 }
-                $reperedate = $debname;
+                $reperedate = $dated;
                 $idpan = 'panneau-'.$cpt++;
                 $html .= '<div role="tabpanel" id="'. $idpan .'">';
             }
-                
-    
-            
+
             // Div qui contient chaque element d'un cours dans le TDB.
-            $html .= '<div class="cours-contenu row-fluid w-100 border">'; 
-            
+            $html .= '<div class="cours-contenu row-fluid w-100 border">';
+
             // Titre du cours.
             $html .= '<h3 class="cours-titre col-md-12 p-3">';
             // Add jjupin 31/01/17 => ajouter une information si le cours est masqué.
@@ -121,11 +122,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                                                           $attributes)
                                         . ' (' . format_string($course->hostname) . ')', 2, 'title');
             }
-
              $html .= "</h3>";  // Fin: Titre du cours.
-
-            
-     
 
             // RECUPERER  AVANCEMENT.
             // Recuperation du role de l'utilisateur dans le cours ainsi que  les informations concernant les activites du cours.
@@ -183,23 +180,18 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 $html .= $this->afficher_notification($course, $overviews);
             }
 
-
-           
-             $html .= "</div>"; // // Fin: cours-infos.
-
+            $html .= "</div>"; // Fin: cours-infos.
             $courseordernumber++;
             // Bouton pour acceder au cours.
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
             $html .= '<div class="col-lg-2 col-md-4 mb-2 mt-2"><a class="btn btn-primary btn-lg w-100" href="'.$courseurl.'">' .
                     get_string('reach', 'block_tableau_bord').' </a></div>';
-           
-           
-           
+
             $html .= "</div>"; // Fin du cours-contenu.
         }
-        
+
          $html .= "</div></div>"; // Fin du cours-liste (2 div).
-        
+
         if ($cpt > 1) {
             // Code js.
             $html .= '<script>var list = document.querySelector( \'[role="ongletlist"]\' );';
@@ -224,9 +216,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
             $html .= '</script>';
         }
-        
+
         $html .= '</div>'; // Fin: tdb-container.
-        
+
         return $html;
     }
 
