@@ -68,6 +68,8 @@ class block_tableau_bord extends block_base {
         $this->content->footer = '';
 
         profile_load_custom_fields($USER);
+        $editmode = optional_param('editmode', 'off', PARAM_TEXT);
+
         list($sortedcourses, $sitecourses, $totalcourses) = block_tableau_bord_get_sorted_courses();
         $overviews = block_tableau_bord_get_overviews($sitecourses);
 
@@ -82,13 +84,15 @@ class block_tableau_bord extends block_base {
         if (empty($sortedcourses)) {
             $this->content->text .= "<b>" . get_string('nocourses', 'my') . "</b>";
         } else {
-            if ($this->page->user_is_editing()) {
+            if ($editmode == 'on') {
                 $std = array();
                 foreach ($sortedcourses as $course) {
                     $std[] = $course;
                 }
                 // Load script Ajax.
                 $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
+                $this->content->text .= '<a class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php">';
+                $this->content->text .= 'Quitter ordonnancer les cours</a>';
                 $this->content->text .= $renderer->render_from_template('block_tableau_bord/lstcourse',
                                             array('std' => $std, 'wroot' => $CFG->wwwroot, 'userid' => $USER->id), null);
             } else {
@@ -131,6 +135,8 @@ class block_tableau_bord extends block_base {
                         }
                     }
                 }
+                $this->content->text .= '<a href="'.$CFG->wwwroot.'/my/index.php?editmode=on" title="Ordonnancer mes cours">';
+                $this->content->text .= '<i class="fa fa-sort" aria-hidden="true"></i></a>';
                 $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews, $lstonglet);
                 $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
             }
