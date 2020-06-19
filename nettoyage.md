@@ -1,5 +1,5 @@
 # Nettoyage du code
-<p align="right"><a href="./index"> Retour </a></p>  
+<p align="right"><a href="./index.md"> Retour </a></p>  
 
 Code checker sur l'intégralité du code relève 
  * 17834 erreur(s)
