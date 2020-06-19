@@ -4,7 +4,7 @@ Code checker sur l'intégralité du code relève
  * 17834 erreur(s)
  * 986 avertissement(s) 
 
-Après suppression des codes morts et correction nous arrivons à 
+Après suppression des codes morts et correction (soit 64 commits plus tard) nous arrivons à 
  * 0 erreurs
  * 3 avertissement(s)
  
