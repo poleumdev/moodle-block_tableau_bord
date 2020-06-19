@@ -11,8 +11,4 @@ Ce premier développement n'est malheureusement pas entièrement fonctionnel, bi
 
 [AnalyseTechnique.zip 37Ko](https://github.com/poleumdev/moodle-block_tableau_bord/files/4750524/AnalyseTechnique.zip)  
 
-En 2017 le PRN réalise le plugin tuteur, clone du rapport d'achèvement, et améliore le tableau de bord pour : 
- * permettre l'affichage des cours par onglet, un onglet par année scolaire
- * donner l'accès au rapport "tuteur" dans la vue enseignant du tableau de bord.
 
-En 2020 le plugin subit une maintenance consistant au nettoyage du code et à la remise en place de l'ordonnancement des cours.
