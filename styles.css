@@ -1,18 +1,18 @@
 /* add jjupin Masquer bouton modifier ordre cours  et tabs annulalisation */
 form#ordre_cours {
-    display:none;
+    display: none;
 }
 
 span.nouveautetdb {
     font-size: 18px;
-    color:#333;
-    margin-bottom:10px;
+    color: #333;
+    margin-bottom: 10px;
 }
 
 .block_tableau_bord div#tabs {
-    float:left;
+    float: left;
     border-radius: 0;
-    border: 1px solid rgba(238,238,238,1);
+    border: 1px solid rgba(238, 238, 238, 1);
 }
 
 /* add jjupin 31/01/17 => ajouter une classe CSS si le cours est masqué (le griser) */
@@ -22,139 +22,138 @@ div.course_not_visible {
 /* end add jjupin 31/01/17 */
 
 /* Cursor on tabs (same as buttons) / Add jjupin 18/02/20. */
-#LMtabs li{
+#LMtabs li {
     cursor: pointer;
 }
 
 
 /* Pour que le formulaire et le bouton de la grille soient sur la même ligne */
-.block_tableau_bord  .bouton{
+.block_tableau_bord  .bouton {
     display: inline-block;
     text-align: center;
     margin: 2px;
 }
 
-.block_tableau_bord  .cours-infos div[id^="region_detaille"], .block_tableau_bord  .cours-infos div[id^="region_notification"]{
+.block_tableau_bord  .cours-infos div[id^="region_detaille"], .block_tableau_bord  .cours-infos div[id^="region_notification"] {
     margin-bottom: 5px !important;
 }
 
-.block_tableau_bord  .cours-infos div[id^="notif-"]{
+.block_tableau_bord  .cours-infos div[id^="notif-"] {
     margin-top: 10px !important;
 }
 
 /* Division d'une seule notification */
-.block_tableau_bord  .notif{
+.block_tableau_bord  .notif {
     margin: 5px 10px 5px 30px;
-    padding-left : 5px;
-    border-left : 2px solid #ccc ;
+    padding-left: 5px;
+    border-left: 2px solid #ccc;
 }
 
-.block_tableau_bord  .notif:hover{
+.block_tableau_bord  .notif:hover {
     background-color: #f0f0f0;
 }
 
 .block_tableau_bord  .notif .overview {
-    margin : 0 8px 0 0 !important;
-    float : left;
+    margin: 0 8px 0 0 !important;
+    float: left;
 }
 
-.notif  a.boutonSupprimer  {
-    float : right;
-    width : 20px;
-    height : 20px;
+.notif  a.boutonSupprimer {
+    float: right;
+    width: 20px;
+    height: 20px;
     margin: -8px -8px 0 0;
     text-decoration: none;
 }
 
-.notif  a.boutonSupprimer div.delete_notif{
-    background:  #ccc;
+.notif  a.boutonSupprimer div.delete_notif {
+    background: #ccc;
     border: none;
     border-radius: 6px;
     font-weight: 800;
     text-align: center;
-    color : white;
+    color: white;
 }
-.notif:hover a.boutonSupprimer div.delete_notif, .notif a.boutonSupprimer div.delete_notif:hover{
+.notif:hover a.boutonSupprimer div.delete_notif, .notif a.boutonSupprimer div.delete_notif:hover {
     background:  #d72329;
 }
 
-.block_tableau_bord  .bouton_aff{
+.block_tableau_bord  .bouton_aff {
     float: right;
     text-align: center;
     margin: 2px;
 }
 
-.block_tableau_bord  .coursebox .contenu_cours{
+.block_tableau_bord  .coursebox .contenu_cours {
     display: inline-block;
     vertical-align: top;
     margin: 5px;
-    position : relative;
+    position: relative;
 }
 
-.block_tableau_bord  .coursebox .cours-avancement-global{
+.block_tableau_bord  .coursebox .cours-avancement-global {
     float: left;
     margin: 5px 0 0 4px;
     padding: 0.3em;
 }
 
-div.collapsibleregioninner[id^=region_histo]{
+div.collapsibleregioninner[id^=region_histo] {
     padding-left: 5px !important;
 }
-div.collapsibleregioninner[id^=region_notification]{
+div.collapsibleregioninner[id^=region_notification] {
     padding-left: 10px !important;
 }
-div.collapsibleregioninner[id^=region_detaille]{
+div.collapsibleregioninner[id^=region_detaille] {
     padding-left: 5px !important;
 }
 
 /*Canvas pour le graphe d'avancement & prof: */
 canvas[id^=affichage], canvas[id^=affichage-autre-cours], canvas[id^=canvasHisto] {
-    position : relative !important;
+    position: relative !important;
 }
 canvas[id^=canvasHisto] {
-    width : 450px !important;
-    height : auto !important;
+    width: 450px !important;
+    height: auto !important;
 }
-
 
 div.formulaire {
-    float : right;
+    float: right;
 }
 
-input.modifier_ordre_cours, input[title="validerCours"]{
+input.modifier_ordre_cours, input[title="validerCours"] {
     margin: 2px 0 0 0 !important;
     background: #e5512b !important;
-    color : #fff !important;
+    color: #fff !important;
     border-radius: 5px !important;
-    border : none !important;
+    border: none !important;
 }
 
-input.modifier_ordre_cours:hover, input[title="validerCours"]:hover{
+input.modifier_ordre_cours:hover, input[title="validerCours"]:hover {
     text-decoration: underline !important;
 }
 
-.block_tableau_bord  .canvasDetaille{
+.block_tableau_bord  .canvasDetaille {
     display: inline-block;
     text-align: center;
     margin: 2px;
 }
 
-.block_tableau_bord  {
+.block_tableau_bord {
     border: none !important;
     box-shadow : none !important;
 }
-div.block_tableau_bord div.header{
+div.block_tableau_bord div.header {
     background: none !important;
 }
-div.block_tableau_bord div.header H2{
-    color : #000 !important;
-    font-size : 2em !important;
+div.block_tableau_bord div.header H2 {
+    color: #000 !important;
+    font-size: 2em !important;
     text-transform: none !important;
 }
 
 
 .menu .welcome_area {
-    padding : 0 0 10px 0!important;
+    padding: 0 0 10px 0!important;
 }
 .menu .welcome_area .profilepicture {
     float: left !important;
@@ -164,9 +163,9 @@ div.block_tableau_bord div.header H2{
     display: inline;
     padding: 0 !important;
 }
-.menu .welcome_area  .welcome_message H2.main{
+.menu .welcome_area  .welcome_message H2.main {
     padding:  0 10px 0 5px !important;
-    margin : 0 !important;
+    margin: 0 !important;
     font-size: 20px  !important;
     line-height: normal  !important;
     display: inline !important;
@@ -178,17 +177,17 @@ div.block_tableau_bord div.header H2{
 }
 
 .menu .welcome_title {
-    float : left;
+    float: left;
 }
-.menu .welcome_title p{
-    margin : 0;
+.menu .welcome_title p {
+    margin: 0;
     font-size: 27px ;
     line-height: normal;
     padding: 0 5px 4px 0;
     //background : #eee;
-    color :  #0088CC;
+    color:  #0088CC;
 }
-.menu .welcome_title p:before{
+.menu .welcome_title p:before {
     content: ">> ";
 }
 
@@ -196,9 +195,7 @@ div.block_tableau_bord div.header H2{
     position: relative;
 }
 
-
-
-div.link-button{
+div.link-button {
     margin: 5px 5px 15px 5px;
     text-align: center;
     background: #0088CC;
@@ -231,7 +228,7 @@ div.link-button{
     padding: 0 10px 0 0;
 }
 
-img.iconhelp{
+img.iconhelp {
     height: 15px !important;
     padding-left: 3px;
     vertical-align: text-bottom;
@@ -239,13 +236,13 @@ img.iconhelp{
 }
 
 .dir-rtl.editing .block_tableau_bord .move {
-    float:right;
+    float: right;
     padding: 2px 10px;
 }
 
 .block_tableau_bord .course_list {
     width: 100%;
-    float : left;
+    float: left;
 }
 
 /*Permet d'afficher les activites en dessous du titre du cours */
@@ -263,8 +260,14 @@ img.iconhelp{
 .block_tableau_bord .activity_overview {
     padding: 2px;
 }
-.block_tableau_bord .activity_overview img.iconlarge { vertical-align: text-bottom; margin-right: 6px; }
-.dir-rtl .block_tableau_bord .activity_overview img.iconlarge { margin-left: 6px; margin-right: 0;}
+.block_tableau_bord .activity_overview img.iconlarge {
+    vertical-align: text-bottom;
+    margin-right: 6px;
+}
+.dir-rtl .block_tableau_bord .activity_overview img.iconlarge {
+    margin-left: 6px;
+    margin-right: 0;
+}
 
 .block_tableau_bord .singleselect {
     text-align: left;
@@ -274,44 +277,44 @@ img.iconhelp{
     text-align: right;
 }
 
-.block_tableau_bord .content .course_list .movehere{
+.block_tableau_bord .content .course_list .movehere {
     margin-bottom: 15px;
 }
 
-.block_tableau_bord .hidden{
+.block_tableau_bord .hidden {
     display: none;
 }
 
-div.block_tableau_bord div div div.block_action{
-    display : none !important;
+div.block_tableau_bord div div div.block_action {
+    display: none !important;
 }
 
 /* Pour le bouton des notifications */
-.course-img{
+.course-img {
     float: left;
-    height : 30px;
-    width : 150px;
+    height: 30px;
+    width: 150px;
 }
 
-.click-notification{ /* déclencheur de l'affichage des notif*/
-cursor : pointer;
+.click-notification { /* déclencheur de l'affichage des notif*/
+    cursor: pointer;
 }
 
 .notification {
-float: left;
-min-width: 20px;
-width: 20px;
-padding:1px;
-margin : 4px 0 0 -30px;
-font-weight: 600;
-font-size: 12px;
-text-align: center;
-background: #d72329;
-border: 1px solid #FFF;
-border-radius: 4px;
+    float: left;
+    min-width: 20px;
+    width: 20px;
+    padding:1px;
+    margin: 4px 0 0 -30px;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+    background: #d72329;
+    border: 1px solid #FFF;
+    border-radius: 4px;
 }
-.notification  a{
-color: #fff !important;
+.notification  a {
+    color: #fff !important;
 }
 
 /* Modification du custom.css de l'ead */
@@ -320,33 +323,32 @@ color: #fff !important;
 
 @media only screen and (max-width : 980px) {
     canvas[id^=canvasHisto] {
-        width : 100% !important;
-        height : auto !important;
-        max-width : 300px !important;
+        width: 100% !important;
+        height: auto !important;
+        max-width: 300px !important;
     }
-
 }
 
 [role="tabpanel"][aria-hidden="true"] {
-  display: none;
+    display: none;
 }
 
 [role="tab"] {
-  opacity: 0.7;
+    opacity: 0.7;
 }
 
 #LMtabs ul li {
-    display:inline-block;
-    float:left;
-    height:24px;
-    min-width:80px;
-    text-align:center;
+    display: inline-block;
+    float: left;
+    height: 24px;
+    min-width: 80px;
+    text-align: center;
     line-height: 22px;
-    padding:0 8px 0 8px;
+    padding: 0 8px 0 8px;
     margin: 1px 3px 0px 5px;
     border: 1px solid gray;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
-    background:#FFFFFF;
-    color:#8080FF;
+    background: #FFFFFF;
+    color: #8080FF;
 }
