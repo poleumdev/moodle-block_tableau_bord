@@ -51,21 +51,30 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/graphes.js'.'"></script>
                  <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/xhr.js'.'"></script>';
 
-        $config = get_config('block_tableau_bord');
         $courseordernumber = 0;
-        $maxcourses = count($courses);
 
         // Le contenu du plugin TDB.
         $html .= '<div class="tdb-container container-fluid">';
 
         // Ajouter une liste HTML avec les dates (pour la construction des onglets).
         if (!empty($arraydate)) {
+            $annee = intval(date("Y"));
+            $mois = intval(date("n"));
+            if ($mois < 8) {
+                $encours = "" . ($annee - 1) . "-" .$annee;
+            } else {
+                $encours = "" . $annee . "-" .($annee + 1);
+            }
             $html .= '<div id="LMtabs" class="row w-100">';
             $html .= '<ul role="ongletlist" class="mb-0">';
             $cpt = 1;
             foreach ($arraydate as $date) {
                 $idpan = 'panneau-'.$cpt++;
-                $html .= '<li role="tab" aria-controls="'. $idpan .'">' . $date . '</li>';
+                if (strcmp($encours, $date) == 0) {
+                    $html .= '<li role="tab" aria-controls="'. $idpan .'" data-open="true">' . $date . '</li>';
+                } else {
+                    $html .= '<li role="tab" aria-controls="'. $idpan .'" >' . $date . '</li>';
+                }
             }
             $html .= '</ul>';
             $html .= '</div>';
@@ -265,15 +274,11 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      * Creates collapsable region
      *
      * @param string $contents existing contents
-     * @param string $classes class names added to the div that is output.
      * @param string $id id added to the div that is output. Must not be blank.
      * @param string $caption text displayed at the top. Clicking on this will cause the region to expand or contract.
-     * @param string $userpref the name of the user preference that stores the user's preferred default state.
-     *      (May be blank if you do not wish the state to be persisted.
-     * @param bool $default Initial collapsed state to use if the user_preference it not set.
      * @return bool if true, return the HTML as a string, rather than printing it.
      */
-    protected function collapsible_region($contents, $classes, $id, $caption, $userpref = '', $default = false) {
+    protected function collapsible_region($contents, $id, $caption) {
         $output = '<div><a href="#'.$id.'" class="LMnav-toggle">'.$caption.'</a></div>';
         $output .= '<div id="'.$id.'" style="display:none">';
         $output .= $contents;
@@ -434,9 +439,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                     . $this->output->help_icon('teacherglobalprogress', 'block_tableau_bord').'</center>';
 
         // Contient l'histogramme dans une menu deroulant.
-        $avancementdetaille .= $this->collapsible_region($histogramme, '', 'region_histo_'.$course->id,
+        $avancementdetaille .= $this->collapsible_region($histogramme, 'region_histo_'.$course->id,
                     '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').'" alt="Avancement icon" /> '.
-                    '<b>'.get_string('seeprogressteacher', 'block_tableau_bord').'</b>', '', true);
+                    '<b>'.get_string('seeprogressteacher', 'block_tableau_bord').'</b>');
 
         // Retourne les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
@@ -648,45 +653,12 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         // Contient les diagrammes d'avancement des types d'activite dans un menu deroulant.
         $avancementdetaille .= $this->collapsible_region(
-                                        $avtactivite, '', 'region_detaille_'.$course->id,
+                                        $avtactivite, 'region_detaille_'.$course->id,
                                         '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').
-                                        '"alt="Avancement icon" /> <b>'.get_string('seeprogress', 'block_tableau_bord').'</b>',
-                                        '', true);
+                                        '"alt="Avancement icon" /> <b>'.get_string('seeprogress', 'block_tableau_bord').'</b>');
 
         // Renvoie les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
-    }
-
-    public function menu($courses) {
-        global $USER, $CFG;
-        // Div pour le menu.
-        $html = '<div class="menu">';
-        $html .= '<div class="welcome_title"><p>';
-        $html .= get_string('plugintitle', 'block_tableau_bord');
-        $html .= '</p></div>';
-
-        // Userediting : booleen vrai si l'utilisateur est en cours de modification de l'ordre des cours, faux sinon.
-        $userediting = !empty($USER->userediting_course) && $USER->userediting_course == true;
-        $html .= '<div class = "formulaire">';
-        // Si en mode edition, on affiche le bouton pour activer le drag and drop.
-        // Sinon bouton pour valider le choix une fois que l'utilisateur a reorganise ses cours.
-        if ($userediting) {
-            $html .= '<form method="post" action="'. $CFG->wwwroot.'/blocks/tableau_bord/ordre_cours.php'.'">
-                      <p> <input type="submit" value="'. get_string('validorder', 'block_tableau_bord') .'"
-                                 title="validerCours" name="valider" /> </p>
-                      </form>';
-        } else {
-            $html .= '<form id = "ordre_cours" method="post" action="'.$CFG->wwwroot.'/blocks/tableau_bord/ordre_cours.php'.'">
-                      <p> <input class="modifier_ordre_cours" type="submit"
-                          value="'. get_string('changeorder', 'block_tableau_bord') .'" name="ordre_cours" /> </p>
-                      </form>';
-        }
-        $html .= '</div>';
-
-        // Fin de la div du menu du haut.
-        $html .= $this->output->box('', 'flush');
-        $html .= '</div>';
-        return $html;
     }
 
     /**
@@ -797,11 +769,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             // Met la variable contenant toutes les notifications ainsi qu'un bouton d'aide dans un menu deroulant.
             $html .= $this->collapsible_region(
                                 $notifactivitecomplete.$this->output->help_icon('notifications', 'block_tableau_bord'),
-                                '',
                                 'region_notification_'.$course->id,
-                                $icontext,
-                                '',
-                                true);
+                                $icontext);
         }
         return $html;
     }

@@ -107,7 +107,7 @@ class block_tableau_bord extends block_base {
                 }
                 $arronglet = array();
                 if (count($lstonglet) > 0) {
-                    sort($lstonglet);
+                    rsort($lstonglet);
                     foreach ($lstonglet as $ongl) {
                         $arronglet[$ongl] = array();
                     }
