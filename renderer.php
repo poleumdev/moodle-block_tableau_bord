@@ -66,14 +66,14 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 $encours = "" . $annee . "-" .($annee + 1);
             }
             $html .= '<div id="LMtabs" class="row w-100">';
-            $html .= '<ul role="ongletlist" class="mb-0">';
+            $html .= '<ul role="ongletlist" class="nav nav-pills mb-0">';
             $cpt = 1;
             foreach ($arraydate as $date) {
                 $idpan = 'panneau-'.$cpt++;
                 if (strcmp($encours, $date) == 0) {
-                    $html .= '<li role="tab" aria-controls="'. $idpan .'" data-open="true">' . $date . '</li>';
+                    $html .= '<li class="nav-item" role="tab" aria-controls="'. $idpan .'" data-open="true"><a class="nav-link " href="#">' . $date . '</a></li>';
                 } else {
-                    $html .= '<li role="tab" aria-controls="'. $idpan .'" >' . $date . '</li>';
+                    $html .= '<li class="nav-item" role="tab" aria-controls="'. $idpan .'" ><a class="nav-link " href="#">' . $date . '</a></li>';
                 }
             }
             $html .= '</ul>';
@@ -205,14 +205,6 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             // Code js.
             $html .= '<script>var list = document.querySelector( \'[role="ongletlist"]\' );';
             $html .= 'var tablist = new window.Tablist( list );';
-            $html .= 'tablist.on( \'show\', function( tab, tabPanel ){';
-            $html .= 'tab.style.backgroundColor = "#C0C0C0";';
-            $html .= 'tab.style.color = "#000000";';
-            $html .= '});';
-            $html .= 'tablist.on( \'hide\', function( tab, tabPanel ){';
-            $html .= 'tab.style.backgroundColor = "#FFFFFF";';
-            $html .= 'tab.style.color = "#8080FF";';
-            $html .= '});';
             $html .= 'tablist.mount();';
 
             $html .= "$(document).ready(function() {

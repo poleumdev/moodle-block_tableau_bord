@@ -21,10 +21,6 @@ div.course_not_visible {
 }
 /* end add jjupin 31/01/17 */
 
-/* Cursor on tabs (same as buttons) / Add jjupin 18/02/20. */
-#LMtabs li {
-    cursor: pointer;
-}
 
 
 /* Pour que le formulaire et le bouton de la grille soient sur la même ligne */
@@ -333,22 +329,7 @@ div.block_tableau_bord div div div.block_action {
     display: none;
 }
 
-[role="tab"] {
-    opacity: 0.7;
-}
-
-#LMtabs ul li {
-    display: inline-block;
-    float: left;
-    height: 24px;
-    min-width: 80px;
-    text-align: center;
-    line-height: 22px;
-    padding: 0 8px 0 8px;
-    margin: 1px 3px 0px 5px;
-    border: 1px solid gray;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    background: #FFFFFF;
-    color: #8080FF;
+#LMtabs .nav-item[aria-selected="true"] a{
+    color: #fff;
+    background-color: #007bff;    
 }
