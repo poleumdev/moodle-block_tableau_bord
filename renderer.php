@@ -113,7 +113,10 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
             // Add jjupin 31/01/17 => ajouter une information si le cours est masqué.
             if (empty($course->visible)) {
+                $html .= '<a class="text-muted" href="'.$courseurl.'">';
                 $html .= '(COURS MASQUÉ) ';
+            }else{
+                $html .= '<a class="text-dark" href="'.$courseurl.'">';
             }
             // End add jjupin 31/01/17.
 
