@@ -106,8 +106,11 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             // Div qui contient chaque element d'un cours dans le TDB.
             $html .= '<div class="cours-contenu row-fluid w-100 border">';
 
-            // Titre du cours.
-            $html .= '<h3 class="cours-titre col-md-12 p-3">';
+            // Titre du cours (lien)
+            $html .= '<h4 class="cours-titre col-md-12 p-3">';
+            $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
+            $html .= '<a class="text-dark" href="'.$courseurl.'">';
+
             // Add jjupin 31/01/17 => ajouter une information si le cours est masqué.
             if (empty($course->visible)) {
                 $html .= '(COURS MASQUÉ) ';
@@ -131,7 +134,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                                                           $attributes)
                                         . ' (' . format_string($course->hostname) . ')', 2, 'title');
             }
-             $html .= "</h3>";  // Fin: Titre du cours.
+            $html .= '</a>';
+             $html .= "</h4>";  // Fin: Titre du cours.
 
             // RECUPERER  AVANCEMENT.
             // Recuperation du role de l'utilisateur dans le cours ainsi que  les informations concernant les activites du cours.
