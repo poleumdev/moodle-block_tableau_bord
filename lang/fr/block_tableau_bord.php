@@ -101,15 +101,15 @@ $string['validorder'] = 'Valider l\'ordre des cours';
 // Avancement detaille etudiant.
 $string['assign'] = 'Devoir';
 $string['resource'] = 'Ressource';
-$string['otheractivity'] = 'Autre activité';
+$string['otheractivity'] = 'Autre';
 $string['lesson'] = 'Leçon';
 $string['quiz'] = 'Test';
 
-$string['oneactivityremaining'] = '{$a} Restant';
-$string['someactivityremaining'] = '{$a} Restants';
+$string['oneactivityremaining'] = '{$a} restant';
+$string['someactivityremaining'] = '{$a} restants';
 
-$string['oneactivityfeminineremaining'] = '{$a} Restante';
-$string['someactivityfeminineremaining'] = '{$a} Restantes';
+$string['oneactivityfeminineremaining'] = '{$a} restante';
+$string['someactivityfeminineremaining'] = '{$a} restantes';
 
 // Devoir.
 $string['duedate'] = 'À remettre jusqu\'au';

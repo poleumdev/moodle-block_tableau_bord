@@ -81,8 +81,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         }
 
         // Div qui contient la liste des cours TDB.
-        $html .= '<div class="cours-liste col-12">';
-        $html .= '<div class="row-fluid no-gutters">';
+        $html .= '<div class="cours-liste row">';
 
         $cpt = 1;
         $reperedate = "";
@@ -100,11 +99,11 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 }
                 $reperedate = $dated;
                 $idpan = 'panneau-'.$cpt++;
-                $html .= '<div role="tabpanel" id="'. $idpan .'">';
+                $html .= '<div role="tabpanel" class="container-fluid" id="'. $idpan .'">';
             }
 
             // Div qui contient chaque element d'un cours dans le TDB.
-            $html .= '<div class="cours-contenu row-fluid w-100 border">';
+            $html .= '<div class="cours-contenu row border">';
 
             // Titre du cours (lien)
             $html .= '<h4 class="cours-titre col-md-12 p-3">';
@@ -177,14 +176,14 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             }
 
             // Affiche l'avancement global s'il existe.
-            $html .= '<div class="cours-avancement-global  col-md-3" >';
+            $html .= '<div class="cours-avancement-global  col-md-3 text-center" >';
             if ($avancementglobal !== "") {
                 $html .= $avancementglobal;
             }
             $html .= "</div>"; // Fin: avancement global.
 
             // AFFICHER AVANCEMENT  DETAILLE & NOTIFICATIONS.
-            $html .= '<div class="cours-infos col-md-5">';
+            $html .= '<div class="cours-infos col-md-6">';
 
             // Avancement ou si acucune activité.
             if ($nbact > 0) {
@@ -200,13 +199,13 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             $courseordernumber++;
             // Bouton pour acceder au cours.
             $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
-            $html .= '<div class="col-md-4 mb-2 mt-2"><a class="btn btn-primary btn-lg w-100" href="'.$courseurl.'">' .
+            $html .= '<div class="col-md-3 mb-2 mt-2"><a class="btn btn-primary w-100" href="'.$courseurl.'">' .
                     get_string('reach', 'block_tableau_bord').' </a></div>';
 
             $html .= "</div>"; // Fin du cours-contenu.
         }
 
-         $html .= "</div></div>"; // Fin du cours-liste (2 div).
+         $html .= "</div>"; // Fin du cours-liste.
 
         if ($cpt > 1) {
             // Code js.
@@ -407,7 +406,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         $histogramme = ""; // Contient le code html permettant d'afficher l'histogramme.
         // Creation du canvas pour l'histo et des variable JS a passer en parametre de la fonction JS qui creera l'histo.
-        $histogramme .= '<canvas id="'.$idcanvashisto.'"  width="450"></canvas>'.
+        $histogramme .= '<canvas id="'.$idcanvashisto.'"  ></canvas>'.
                         '<script type="text/javascript">
                           var canvasHisto = "'.$idcanvashisto.'";
                           var tableauHisto = new Array();';
@@ -420,27 +419,30 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         // Creation de l'histogramme pour le cours.
         $histogramme .= 'creerBar(canvasHisto,tableauHisto); </script>
-                        <center><b>Nombre d\'étudiants par pourcentage d\'avancement</b>'
+                        Nombre d\'étudiants par pourcentage d\'avancement'
                         . $this->output->help_icon('teacherdetailedprogress', 'block_tableau_bord')
-                        . '</center>'
-                        .'<div class = "link-button"> <a href="' .
+                        . ''
+                        .'<div class = "btn btn-primary btn-sm mb-2 w-100"> <a class="text-white" href="' .
                         $url . '">Afficher l\'achèvement d\'activités par étudiant </a> </div>';
         // Creation de l'affichage global pour le cours (camembert).
-        $avancementglobal .= '<center><canvas id="'.$idcanvasglobal.'" height="90" width="120"></canvas></center>
+        $avancementglobal .= '<canvas class="col-12" id="'.$idcanvasglobal.'" ></canvas>
                     <script>
                     var canvasGlobal="affichage-global-cours-'.$course->id.'";
                     var pourcentage_act_complet_'.$course->id.' ='.$pcentacheve.';
                     var pourcentage_act_incomplet_'.$course->id.' ='.$pcentnonacheve.';
                     creerPieProf(canvasGlobal, pourcentage_act_complet_'.$course->id.', pourcentage_act_incomplet_'.$course->id.');
                     </script>
-                    <center><b>'. get_string('teacherprogress', 'block_tableau_bord')
-                    . ' : '.intval($pcentacheve).' % </b> '
-                    . $this->output->help_icon('teacherglobalprogress', 'block_tableau_bord').'</center>';
+                    
+                     <div class="col-12">
+                    '. get_string('teacherprogress', 'block_tableau_bord')
+                    . ' : '.intval($pcentacheve).' %  '
+                    . $this->output->help_icon('teacherglobalprogress', 'block_tableau_bord').'
+                    </div>  ';
 
         // Contient l'histogramme dans une menu deroulant.
         $avancementdetaille .= $this->collapsible_region($histogramme, 'region_histo_'.$course->id,
                     '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').'" alt="Avancement icon" /> '.
-                    '<b>'.get_string('seeprogressteacher', 'block_tableau_bord').'</b>');
+                    ''.get_string('seeprogressteacher', 'block_tableau_bord').'');
 
         // Retourne les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
@@ -512,22 +514,25 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
 
         $avtactivite = ""; // Contient l'affichage detaille (un graphe pour un type d'activite).
 
+        $avtactivite .= '<div class="canvas-detail row justify-content-start">';    
+
         // Pourcentage de completion pour chaque type d'activite ainsi qu'ajout du canvas et du graphe dans celui-ci.
         if ($devoiracheve + $devoirnonacheve > 0) {
             $pcentdevoiracheve = $devoiracheve / ($devoiracheve + $devoirnonacheve) * 100;
             $pcentdevoirnonacheve = 100 - $pcentdevoiracheve;
-            $avtactivite .= '<div class = canvasDetaille>';
-            $avtactivite .= '<center><b>'. get_string('assign', 'block_tableau_bord') .'</b></center>';
-            $avtactivite .= '<canvas id="affichage-devoir-cours-'. $course->id. '" height="60" width="80"></canvas>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('assign', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<canvas class="col-12" id="affichage-devoir-cours-'. $course->id. '" ></canvas>';
 
             // Affiche le nombre de devoirs restants.
-            $avtactivite .= '<center>';
+            $avtactivite .= '<div class="col-12  text-center">';
             if ($devoirnonacheve <= 1) {
                 $avtactivite .= get_string('oneactivityremaining', 'block_tableau_bord', $devoirnonacheve);
             } else {
                 $avtactivite .= get_string('someactivityremaining', 'block_tableau_bord', $devoirnonacheve);
             }
-            $avtactivite .= '</center></div>';
+            $avtactivite .= '</div>';
+            $avtactivite .= '</div>';
 
             $avtactivite .= '<script>
                         var canvas_devoir = "affichage-devoir-cours-'.$course->id.'";
@@ -542,18 +547,19 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($leconachevee + $leconnonachevee > 0) {
             $pcentleconachevee = $leconachevee / ($leconachevee + $leconnonachevee) * 100;
             $pcentleconnonachevee = 100 - $pcentleconachevee;
-            $avtactivite .= '<div class = canvasDetaille>';
-            $avtactivite .= '<center><b>'. get_string('lesson', 'block_tableau_bord') .'</b></center>';
-            $avtactivite .= '<canvas id="affichage-lecon-cours-'. $course->id .'" height="60" width="80"></canvas>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('lesson', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<canvas class="col-12" id="affichage-lecon-cours-'. $course->id .'" ></canvas>';
 
             // Affiche le nombre de lecons restantes.
-            $avtactivite .= '<center>';
+            $avtactivite .= '<div class="col-12  text-center">';
             if ($leconnonachevee <= 1) {
                 $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $leconnonachevee);
             } else {
                 $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $leconnonachevee);
             }
-            $avtactivite .= '</center></div>';
+            $avtactivite .= '</div>';
+            $avtactivite .= '</div>';
             $avtactivite .= '<script>
                         var canvas_lecon = "affichage-lecon-cours-'.$course->id.'";
                         var pourcentage_lecon_achevee_'.$course->id.' ='.$pcentleconachevee.';
@@ -567,18 +573,20 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($ressourceachevee + $ressourcenonachevee > 0) {
             $pcentressourceachevee = $ressourceachevee / ($ressourceachevee + $ressourcenonachevee) * 100;
             $pcentressourcenonachevee = 100 - $pcentressourceachevee;
-            $avtactivite .= '<div class = canvasDetaille>';
-            $avtactivite .= '<center><b>'. get_string('resource', 'block_tableau_bord') .'</b></center>';
-            $avtactivite .= '<canvas id="affichage-ressource-cours-' . $course->id . '" height="60" width="80"></canvas>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('resource', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<canvas class="col-12" id="affichage-ressource-cours-' . $course->id . '" ></canvas>';
 
             // Affiche le nombre de ressources restantes.
-            $avtactivite .= '<center>';
+            $avtactivite .= '<div class="col-12  text-center">';
             if ($ressourcenonachevee <= 1) {
                 $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $ressourcenonachevee);
             } else {
                 $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $ressourcenonachevee);
             }
-            $avtactivite .= '</center></div>';
+            $avtactivite .= '</div>';
+            $avtactivite .= '</div>';
+            
             $avtactivite .= '<script>
                         var canvas_ressource = "affichage-ressource-cours-'.$course->id.'";
                         var pourcentage_ressource_achevee_'.$course->id.' ='.$pcentressourceachevee.';
@@ -592,17 +600,19 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($testacheve + $testnonacheve > 0) {
             $pcenttestacheve = $testacheve / ($testacheve + $testnonacheve) * 100;
             $pcenttestnonacheve = 100 - $pcenttestacheve;
-            $avtactivite .= '<div class = canvasDetaille>';
-            $avtactivite .= '<center><b>'. get_string('quiz', 'block_tableau_bord') .'</b></center>';
-            $avtactivite .= '<canvas id="affichage-test-cours-'.$course->id.'" height="60" width="80"></canvas>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('quiz', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<canvas class="col-12" id="affichage-test-cours-'.$course->id.'" ></canvas>';
             // Affiche le nombre de ressources restantes.
-            $avtactivite .= '<center>';
+            $avtactivite .= '<div class="col-12  text-center">';
             if ($testnonacheve <= 1) {
                 $avtactivite .= get_string('oneactivityremaining', 'block_tableau_bord', $testnonacheve);
             } else {
                 $avtactivite .= get_string('someactivityremaining', 'block_tableau_bord', $testnonacheve);
             }
-            $avtactivite .= '</center></div>';
+            $avtactivite .= '</div>';
+            $avtactivite .= '</div>';
+            
 
             $avtactivite .= '<script>
                         var canvas_test = "affichage-test-cours-'.$course->id.'";
@@ -615,17 +625,20 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($autreacheve + $autrenonacheve > 0) {
             $pcentautreacheve = $autreacheve / ($autreacheve + $autrenonacheve) * 100;
             $pcentautrenonacheve = 100 - $pcentautreacheve;
-            $avtactivite .= '<div class = canvasDetaille>';
-            $avtactivite .= '<center><b>'. get_string('otheractivity', 'block_tableau_bord') .'</b></center>';
-            $avtactivite .= '<canvas id="affichage-autre-cours-'. $course->id. '" height="60" width="80"></canvas>';
-            $avtactivite .= '<center>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('otheractivity', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<canvas class="col-12" id="affichage-autre-cours-'. $course->id. '" ></canvas>';
+            $avtactivite .= '';
             // Affiche le nombre d'autres activites restantes.
+            $avtactivite .= '<div class="col-12  text-center">';
             if ($autrenonacheve <= 1) {
                 $avtactivite .= get_string('oneactivityfeminineremaining', 'block_tableau_bord', $autrenonacheve);
             } else {
                 $avtactivite .= get_string('someactivityfeminineremaining', 'block_tableau_bord', $autrenonacheve);
             }
-            $avtactivite .= '</center></div>';
+            $avtactivite .= '</div>';
+            $avtactivite .= '</div>';
+            
 
             $avtactivite .= '<script>
                         var canvas_autre = "affichage-autre-cours-'.$course->id.'";
@@ -635,26 +648,30 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                         ', pourcentage_autre_non_acheve_'.$course->id.');</script>';
         }
         // Info bulle à la fin.
-        $avtactivite .= $this->output->help_icon('studentdetailedprogress', 'block_tableau_bord');
+        //$avtactivite .= $this->output->help_icon('studentdetailedprogress', 'block_tableau_bord');
+
+        $avtactivite .= '</div>';    //fin div class=canvas-detail ;
+        
 
         // Cree le diagramme d'avancement global.
-        $avancementglobal .= ' <center><canvas id="affichage-global-cours-'. $course->id .
-                    '" height="90" width="120" ></canvas></center>
+        $avancementglobal .= ' <canvas class="col-12" id="affichage-global-cours-'. $course->id .
+                    '" " ></canvas>
                     <script>
                     var canvas = "affichage-global-cours-'.$course->id.'";
                     var pourcentage_act_achevee_'.$course->id.' ='.$pcentacheve.';
                     var pourcentage_act_non_achevee_'.$course->id.' ='.$pcentnonacheve.';
                     creerPie(canvas, pourcentage_act_achevee_'.$course->id.', pourcentage_act_non_achevee_'.$course->id.');
                     </script>
-
-                    <center><b>'. get_string('studentprogress', 'block_tableau_bord').' : '.intval($pcentacheve).' %</b>
-                    '.$this->output->help_icon('studentglobalprogress', 'block_tableau_bord').'</center>';
+                    <div class="col-12">
+                    '. get_string('studentprogress', 'block_tableau_bord').' : '.intval($pcentacheve).'%
+                    '.$this->output->help_icon('studentglobalprogress', 'block_tableau_bord').'
+                    </div>';
 
         // Contient les diagrammes d'avancement des types d'activite dans un menu deroulant.
         $avancementdetaille .= $this->collapsible_region(
                                         $avtactivite, 'region_detaille_'.$course->id,
                                         '<img src="'. $this->output->image_url('avancement_18', 'block_tableau_bord').
-                                        '"alt="Avancement icon" /> <b>'.get_string('seeprogress', 'block_tableau_bord').'</b>');
+                                        '"alt="Avancement icon" /> '.get_string('seeprogress', 'block_tableau_bord').'');
 
         // Renvoie les deux types d'avancement separement.
         return array($avancementglobal, $avancementdetaille);
@@ -739,9 +756,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 $titrenotiftypeactivite .= '<div id="notif-'.$module.'-course-'.($course->id).'">';
                 $titrenotiftypeactivite .= html_writer::link($url, $this->output->pix_icon('icon', $typeactivite,
                                                                         'mod_'.$module, array('class' => 'iconlarge')));
-                $titrenotiftypeactivite .= '<b>';
+                $titrenotiftypeactivite .= '';
                 $titrenotiftypeactivite .= get_string("activityoverview".$module, "block_tableau_bord");
-                $titrenotiftypeactivite .= '</b></div>';
+                $titrenotiftypeactivite .= '</div>';
             }
 
             // On concatene les notifs d'un meme type d'activite avec le titre correspondant.
@@ -757,12 +774,12 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($nbtypeactivite > 0) {
             if ($nbtypeactivite == 1) {
                 $icontext = '<img src="'. $this->output->image_url('notification_18', 'block_tableau_bord')
-                            . '" alt="Notification icon" /> <b>'
-                            . get_string('youhaveanotification', 'block_tableau_bord').'</b>';
+                            . '" alt="Notification icon" /> '
+                            . get_string('youhaveanotification', 'block_tableau_bord').'';
             } else {
                 $icontext = '<img src="'. $this->output->image_url('notification_18', 'block_tableau_bord')
-                            . '" alt="Notification icon" /> <b>'
-                            . get_string('youhavesomenotifications', 'block_tableau_bord', $nbtypeactivite).'</b>';
+                            . '" alt="Notification icon" /> '
+                            . get_string('youhavesomenotifications', 'block_tableau_bord', $nbtypeactivite).'';
             }
 
             // Met la variable contenant toutes les notifications ainsi qu'un bouton d'aide dans un menu deroulant.

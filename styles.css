@@ -103,18 +103,21 @@ div.collapsibleregioninner[id^=region_detaille] {
     padding-left: 5px !important;
 }
 
-/*Canvas pour le graphe d'avancement & prof: */
-canvas[id^=affichage], canvas[id^=affichage-autre-cours], canvas[id^=canvasHisto] {
-    position: relative !important;
-}
-canvas[id^=canvasHisto] {
-    width: 450px !important;
+/* Canvas pour le graphe d'avancement & prof: */
+
+.cours-liste canvas{
+    width: 100% !important;
     height: auto !important;
 }
-
-div.formulaire {
-    float: right;
+.cours-avancement-global canvas{
+    max-width: 200px !important;
 }
+div[id^=region_detaille] canvas{
+    max-width: 100px !important;
+}
+
+
+
 
 input.modifier_ordre_cours, input[title="validerCours"] {
     margin: 2px 0 0 0 !important;
@@ -128,11 +131,7 @@ input.modifier_ordre_cours:hover, input[title="validerCours"]:hover {
     text-decoration: underline !important;
 }
 
-.block_tableau_bord  .canvasDetaille {
-    display: inline-block;
-    text-align: center;
-    margin: 2px;
-}
+
 
 .block_tableau_bord {
     border: none !important;
@@ -317,19 +316,11 @@ div.block_tableau_bord div div div.block_action {
 /* ----------------------------------- */
 
 
-@media only screen and (max-width : 980px) {
-    canvas[id^=canvasHisto] {
-        width: 100% !important;
-        height: auto !important;
-        max-width: 300px !important;
-    }
-}
-
 [role="tabpanel"][aria-hidden="true"] {
     display: none;
 }
 
 #LMtabs .nav-item[aria-selected="true"] a{
     color: #fff;
-    background-color: #007bff;    
+    background-color: #1177d1;    
 }
