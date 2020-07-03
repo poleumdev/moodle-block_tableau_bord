@@ -520,8 +520,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($devoiracheve + $devoirnonacheve > 0) {
             $pcentdevoiracheve = $devoiracheve / ($devoiracheve + $devoirnonacheve) * 100;
             $pcentdevoirnonacheve = 100 - $pcentdevoiracheve;
-            $avtactivite .= '<div class = "canvasDetaille col text-center">';
-            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('assign', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center ">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center mb-1 mt-1">'. get_string('assign', 'block_tableau_bord') .'</div>';
             $avtactivite .= '<canvas class="col-12" id="affichage-devoir-cours-'. $course->id. '" ></canvas>';
 
             // Affiche le nombre de devoirs restants.
@@ -547,8 +547,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($leconachevee + $leconnonachevee > 0) {
             $pcentleconachevee = $leconachevee / ($leconachevee + $leconnonachevee) * 100;
             $pcentleconnonachevee = 100 - $pcentleconachevee;
-            $avtactivite .= '<div class = "canvasDetaille col text-center">';
-            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('lesson', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center ">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center mb-1 mt-1">'. get_string('lesson', 'block_tableau_bord') .'</div>';
             $avtactivite .= '<canvas class="col-12" id="affichage-lecon-cours-'. $course->id .'" ></canvas>';
 
             // Affiche le nombre de lecons restantes.
@@ -573,8 +573,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($ressourceachevee + $ressourcenonachevee > 0) {
             $pcentressourceachevee = $ressourceachevee / ($ressourceachevee + $ressourcenonachevee) * 100;
             $pcentressourcenonachevee = 100 - $pcentressourceachevee;
-            $avtactivite .= '<div class = "canvasDetaille col text-center">';
-            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('resource', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center ">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center mb-1 mt-1">'. get_string('resource', 'block_tableau_bord') .'</div>';
             $avtactivite .= '<canvas class="col-12" id="affichage-ressource-cours-' . $course->id . '" ></canvas>';
 
             // Affiche le nombre de ressources restantes.
@@ -600,8 +600,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($testacheve + $testnonacheve > 0) {
             $pcenttestacheve = $testacheve / ($testacheve + $testnonacheve) * 100;
             $pcenttestnonacheve = 100 - $pcenttestacheve;
-            $avtactivite .= '<div class = "canvasDetaille col text-center">';
-            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('quiz', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center ">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center mb-1 mt-1">'. get_string('quiz', 'block_tableau_bord') .'</div>';
             $avtactivite .= '<canvas class="col-12" id="affichage-test-cours-'.$course->id.'" ></canvas>';
             // Affiche le nombre de ressources restantes.
             $avtactivite .= '<div class="col-12  text-center">';
@@ -625,8 +625,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         if ($autreacheve + $autrenonacheve > 0) {
             $pcentautreacheve = $autreacheve / ($autreacheve + $autrenonacheve) * 100;
             $pcentautrenonacheve = 100 - $pcentautreacheve;
-            $avtactivite .= '<div class = "canvasDetaille col text-center">';
-            $avtactivite .= '<div class="col-12 font-weight-bold text-center m-1 ">'. get_string('otheractivity', 'block_tableau_bord') .'</div>';
+            $avtactivite .= '<div class = "canvasDetaille col text-center ">';
+            $avtactivite .= '<div class="col-12 font-weight-bold text-center mb-1 mt-1">'. get_string('otheractivity', 'block_tableau_bord') .'</div>';
             $avtactivite .= '<canvas class="col-12" id="affichage-autre-cours-'. $course->id. '" ></canvas>';
             $avtactivite .= '';
             // Affiche le nombre d'autres activites restantes.

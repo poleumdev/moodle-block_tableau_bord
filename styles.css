@@ -113,7 +113,7 @@ div.collapsibleregioninner[id^=region_detaille] {
     max-width: 200px !important;
 }
 div[id^=region_detaille] canvas{
-    max-width: 100px !important;
+    width: 100px !important;
 }
 
 

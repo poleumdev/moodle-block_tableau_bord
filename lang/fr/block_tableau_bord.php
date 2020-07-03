@@ -105,11 +105,11 @@ $string['otheractivity'] = 'Autre';
 $string['lesson'] = 'Leçon';
 $string['quiz'] = 'Test';
 
-$string['oneactivityremaining'] = '{$a} restant';
-$string['someactivityremaining'] = '{$a} restants';
+$string['oneactivityremaining'] = '{$a}&nbsp;restant';
+$string['someactivityremaining'] = '{$a}&nbsp;restants';
 
-$string['oneactivityfeminineremaining'] = '{$a} restante';
-$string['someactivityfeminineremaining'] = '{$a} restantes';
+$string['oneactivityfeminineremaining'] = '{$a}&nbsp;restante';
+$string['someactivityfeminineremaining'] = '{$a}&nbsp;restantes';
 
 // Devoir.
 $string['duedate'] = 'À remettre jusqu\'au';
