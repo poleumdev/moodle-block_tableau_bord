@@ -398,8 +398,13 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         }
 
         // Pourcentage de l'avancement moyen de tous les utilisateurs.
-        $pcentacheve = ($nbactacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
-        $pcentnonacheve = ($nbactnonacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
+        if(0 == ($nbactnonacheveetotal+$nbactacheveetotal)){ // Add JJUPIN: BUG DIVISION BY 0.
+            $pcentacheve = 0;
+            $pcentnonacheve = 100;
+        }else{
+            $pcentacheve = ($nbactacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
+            $pcentnonacheve = ($nbactnonacheveetotal / ($nbactnonacheveetotal + $nbactacheveetotal)) * 100;
+        }
 
         $idcanvashisto = "canvasHisto" . $course->id;
         $idcanvasglobal = "affichage-global-cours-" . $course->id;
@@ -427,6 +432,8 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         // Creation de l'affichage global pour le cours (camembert).
         $avancementglobal .= '<canvas class="col-12" id="'.$idcanvasglobal.'" ></canvas>
                     <script>
+                    var test1 ='.$nbactnonacheveetotal.';
+                    var test2 ='.$nbactacheveetotal.';
                     var canvasGlobal="affichage-global-cours-'.$course->id.'";
                     var pourcentage_act_complet_'.$course->id.' ='.$pcentacheve.';
                     var pourcentage_act_incomplet_'.$course->id.' ='.$pcentnonacheve.';

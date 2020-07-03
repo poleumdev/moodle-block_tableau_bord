@@ -179,7 +179,6 @@ div.block_tableau_bord div.header H2 {
     font-size: 27px ;
     line-height: normal;
     padding: 0 5px 4px 0;
-    //background : #eee;
     color:  #0088CC;
 }
 .menu .welcome_title p:before {
@@ -322,5 +321,5 @@ div.block_tableau_bord div div div.block_action {
 
 #LMtabs .nav-item[aria-selected="true"] a{
     color: #fff;
-    background-color: #1177d1;    
+    background-color: #1177d1;
 }
