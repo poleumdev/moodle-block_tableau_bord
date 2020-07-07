@@ -92,7 +92,7 @@ class block_tableau_bord extends block_base {
                 // Load script Ajax.
                 $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
                 $this->content->text .= '<a class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php">';
-                $this->content->text .= 'Quitter l\'organisation de mes cours</a>';
+                $this->content->text .= 'Enregistrer l\'ordre des cours</a>';
                 $this->content->text .= $renderer->render_from_template('block_tableau_bord/lstcourse',
                                             array('std' => $std, 'wroot' => $CFG->wwwroot, 'userid' => $USER->id), null);
             } else {
@@ -136,7 +136,7 @@ class block_tableau_bord extends block_base {
                     }
                 }
                 $this->content->text .= '<div class="d-flex flex-row-reverse"><a  class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php?editmode=on" title="Ordonnancer mes cours">';
-                $this->content->text .= 'Organiser mes cours</a></div>';
+                $this->content->text .= 'Modifier l\'ordre de mes cours</a></div>';
                 $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews, $lstonglet);
                 $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));
             }
