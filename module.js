@@ -1,4 +1,4 @@
-M.block_tableau_bord = {}
+M.block_tableau_bord = {};
 
 M.block_tableau_bord.add_handles = function(Y) {
     M.block_tableau_bord.Y = Y;
@@ -101,7 +101,7 @@ M.block_tableau_bord.add_handles = function(Y) {
             }
         });
     });
-}
+};
 
 M.block_tableau_bord.save = function() {
     var Y = M.block_tableau_bord.Y;
@@ -118,7 +118,7 @@ M.block_tableau_bord.save = function() {
         data: build_querystring(params),
         context: this
     });
-}
+};
 
 /**
  * Init a collapsible region, see print_collapsible_region in weblib.php
