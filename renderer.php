@@ -672,6 +672,28 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         $html = '';                 // Contient toutes les notifications dans un menu deroulant.
         $nbtypeactivite = 0;       // Nombre de types d'activite different a afficher : correspond au nombre de notifications.
 
+        $notifactivite .= '<script>
+                            function effacerNotif(coursemodule, module){
+                                document.getElementById("" + coursemodule).className="hidden";
+                                document.getElementById("bouton" + coursemodule).className="hidden";
+                                var varname = "compteur_notif_" + module + "_course_" + '.($course->id).';
+                                // Nom variable dynamique.
+                                window[varname] -= 1;
+                                if (window[varname] == 0) {
+                                    var notifvarname = "notif-" + module + "-course-" + '.($course->id) .';
+                                    document.getElementById(notifvarname).className="hidden";
+                                    varname = "nombre_type_activite_affiches_"+'.($course->id).';
+                                    window[varname] -= 1;
+                                    if (window[varname] == 0) {
+                                        var notifregvarname = "region_notification_" + '.($course->id).';
+                                        document.getElementById(notifregvarname).className="hidden";
+                                    }
+                                }
+                                // Appelle ajax.
+                                ajax_delete_notif(true,['. $USER->id . ', coursemodule]);
+                            }
+                           </script>';
+                            
         // Pour chaque type d'activite du cours.
         foreach (array_keys($overviews[$course->id]) as $module) {
             $activiteaffichee = 0; // Nb activite qui sont affichees : au depart 0.
@@ -681,36 +703,13 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
             foreach ($overviews[$course->id][$module] as $coursemodule => $notif) {
                 $presencenotif = true;
 
-                // Lors du clic sur le bouton de suppression, un formulaire est appelé en JS/ajax.
-                // Si cette notification est la derniere de son type d'activite dans un cours.
-                // On supprime le titre du type de notification.
-                $notifactivite .= '
-                            <script>
-                            document.effacerNotif'.$coursemodule.' = function(){
-                                document.getElementById("'.$coursemodule.'").className="hidden";
-                                document.getElementById("bouton'.$coursemodule.'").className="hidden";
-                                compteur_notif_'.$module.'_course_'.($course->id).' -= 1;
-                                if(compteur_notif_'.$module.'_course_'.($course->id).' == 0){
-                                    document.getElementById("notif-'.$module.'-course-'.($course->id).'").className="hidden";
-                                    nombre_type_activite_affiches_'.($course->id).' -= 1;
-                                    if(nombre_type_activite_affiches_'.($course->id).' == 0){
-                                        document.getElementById("region_notification_'.($course->id).'").className="hidden";
-                                    }
-                                }
-                                // Appelle un formulaire pour ajouter a la table la notification qd clic sur le bouton suppression.
-                                xhr.open("POST", "'.$CFG->wwwroot.'/blocks/tableau_bord/suppression_notif.php'.'", true);
-                                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                                xhr.send("id_activite='.$coursemodule.'&id_user='.($USER->id).'");
-                            }
-                            </script>';
-
                 // Creation de la division qui contient la notification en elle meme ainsi que le bouton de suppression.
                 $notifactivite .= '<div id='.$coursemodule.' class="notif">';
                 $notifactivite .= $notif;
                 // Bouton de suppression de la notification.
                 $notifactivite .= '<a id="bouton'.$coursemodule.'" class="boutonSupprimer"
                                 title="Cliquer ici pour supprimer la notification"
-                                href=\'javascript:document.effacerNotif'.$coursemodule.'();\'>
+                                href=\'javascript:effacerNotif(' .$coursemodule.',"'.$module.'");\'>
                                 <div class="delete_notif">X</div></a>';
 
                 $notifactivite .= '</div>';
@@ -737,7 +736,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                 // Construction du titre pour un type de notification.
                 $titrenotiftypeactivite .= '<div id="notif-'.$module.'-course-'.($course->id).'">';
                 $titrenotiftypeactivite .= html_writer::link($url, $this->output->pix_icon('icon', $typeactivite,
-                                                                        'mod_'.$module, array('class' => 'iconlarge')));
+                                                                    'mod_'.$module, array('class' => 'iconlarge')));
                 $titrenotiftypeactivite .= '';
                 $titrenotiftypeactivite .= get_string("activityoverview".$module, "block_tableau_bord");
                 $titrenotiftypeactivite .= '</div>';

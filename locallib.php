@@ -30,18 +30,12 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $courses courses for which overview needs to be shown
  * @return array html overview
  */
-
-function block_tableau_bord_get_overviews($courses) {
+function block_tableau_bord_get_overviews($coursesover) {
     $notification = array();
     if ($modules = get_plugin_list('mod')) {
-        if (defined('MAX_MODINFO_CACHE_SIZE') && MAX_MODINFO_CACHE_SIZE > 0 && count($courses) > MAX_MODINFO_CACHE_SIZE) {
-            $batches = array_chunk($courses, MAX_MODINFO_CACHE_SIZE, true);
-        } else {
-            $batches = array($courses);
-        }
 
         // Pour chaque cours.
-        foreach ($batches as $courses) {
+        foreach ($coursesover as $courses) {
             // Pour chaque type d'activite existante on recherche si le cours necessite des notifications.
             foreach ($modules as $mod => $fname) {
                 // Ajoute les notifications dans le tableau $notification.

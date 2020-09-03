@@ -23,11 +23,8 @@ defined('MOODLE_INTERNAL') || die();
 function creer_notif($courses, &$notification, $mod) {
     global $USER, $CFG, $DB;
     if ($mod == "assign") {
-        if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-            return array();
-        }
         // Renvoie tous les devoirs (que les visibles pour un etudiant).
-        if (!$assignments = get_all_instances_in_courses('assign', $courses)) {
+        if (!$assignments = get_all_instances_in_courses('assign', array($courses->id => $courses))) {
             return;
         }
         $assignmentids = array();
@@ -251,11 +248,8 @@ function creer_notif($courses, &$notification, $mod) {
     }
 
     if ($mod == "forum") {
-        if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-            return array();
-        }
         // Renvoie tous les forums (que les visibiles pour les etudiants).
-        if (!$forums = get_all_instances_in_courses('forum', $courses)) {
+        if (!$forums = get_all_instances_in_courses('forum', array($courses->id => $courses))) {
             return;
         }
 
@@ -380,11 +374,7 @@ function creer_notif($courses, &$notification, $mod) {
             return array();
         }
 
-        if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-            return array();
-        }
-
-        if (!$journals = get_all_instances_in_courses('journal', $courses)) {
+        if (!$journals = get_all_instances_in_courses('journal', array($courses->id => $courses))) {
             return array();
         }
 
@@ -407,12 +397,12 @@ function creer_notif($courses, &$notification, $mod) {
                 $notif = $DB->get_record('tdb_delete_notifications', $paramnotif);
             }
 
-            $courses[$journal->course]->format = $DB->get_field('course', 'format', array('id' => $journal->course));
+            $courses->format = $DB->get_field('course', 'format', array('id' => $journal->course));
             // Si le cours a pour format "weeks" et que le journal a une duree limitee alors on regarde s'il est toujours ouvert.
             // Sinon il l'est toujours.
-            if ($courses[$journal->course]->format == 'weeks' AND $journal->days) {
+            if ($courses->format == 'weeks' AND $journal->days) {
                 // Date de debut du cours.
-                $coursestartdate = $courses[$journal->course]->startdate;
+                $coursestartdate = $courses->startdate;
                 // Date de debut du journal -> correspond a la date du debut de la section
                 // (= date de debut du cours + un nombre de semaine egal au numero de section).
                 $journal->timestart  = $coursestartdate + (($journal->section - 1) * 608400);
@@ -537,12 +527,8 @@ function creer_notif($courses, &$notification, $mod) {
     }
 
     if ($mod == "quiz") {
-        if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-            return array();
-        }
-
         // Recupere toutes les instances de tests (que les visibles pour un etudiant).
-        if (!$quizzes = get_all_instances_in_courses('quiz', $courses)) {
+        if (!$quizzes = get_all_instances_in_courses('quiz', array($courses->id => $courses))) {
             return;
         }
 

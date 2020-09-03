@@ -33,3 +33,29 @@ function ajax_update_courseorder(e, args) {
 
     Y.io(M.cfg.wwwroot + '/blocks/tableau_bord/js/ajaxsrvmethod.php', ioconfig);
 }
+
+function ajax_delete_notif(e, args) {
+    if (e instanceof Event) {
+        e.preventDefault();
+    } else {
+        id_user = args[0];
+        id_activite = args[1];
+    }
+
+    var ioconfig = {
+        method: 'POST',
+        data: {'sesskey': M.cfg.sesskey, 'id_user': id_user.toString(),
+            'id_activite': id_activite.toString()},
+        on: {
+            success: function(o, response) {
+                var data = Y.JSON.parse(response.responseText);
+                console.log('Retour ajax success  ' + data.state);
+            },
+            failure: function(o, response) {
+                console.log('Retour ajax failure ' + response.toSource());
+            }
+        }
+    };
+
+    Y.io(M.cfg.wwwroot + '/blocks/tableau_bord/js/ajaxsuppression_notif.php', ioconfig);
+}
