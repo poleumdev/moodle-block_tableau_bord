@@ -75,6 +75,9 @@ class block_tableau_bord extends block_base {
 
         $renderer = $this->page->get_renderer('block_tableau_bord');
 
+        // Load script Ajax.
+        $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
+                
         if (!empty($config->showwelcomearea)) {
             require_once($CFG->dirroot.'/message/lib.php');
             $msgcount = message_count_unread_messages();
@@ -89,8 +92,6 @@ class block_tableau_bord extends block_base {
                 foreach ($sortedcourses as $course) {
                     $std[] = $course;
                 }
-                // Load script Ajax.
-                $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
                 $this->content->text .= '<a class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php">';
                 $this->content->text .= 'Enregistrer l\'ordre des cours</a>';
                 $this->content->text .= $renderer->render_from_template('block_tableau_bord/lstcourse',
