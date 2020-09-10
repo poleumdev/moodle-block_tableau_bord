@@ -47,83 +47,6 @@ function block_tableau_bord_get_overviews($coursesover) {
 }
 
 /**
- * Sets user preference for maximum courses to be displayed in tableau_bord block
- *
- * @param int $number maximum courses which should be visible
- */
-function block_tableau_bord_update_mynumber($number) {
-    set_user_preference('tableau_bord_number_of_courses', $number);
-}
-
-/**
- * Sets user course sorting preference in tableau_bord block
- *
- * @param array $sortorder sort order of course
- */
-function block_tableau_bord_update_myorder($sortorder) {
-    set_user_preference('tableau_bord_course_order', serialize($sortorder));
-}
-
-/**
- * Returns shortname of activities in course
- *
- * @param int $courseid id of course for which activity shortname is needed
- * @return string|bool list of child shortname
- */
-function block_tableau_bord_get_child_shortnames($courseid) {
-    global $DB;
-    $ctxselect = context_helper::get_preload_record_columns_sql('ctx');
-    $sql = "SELECT c.id, c.shortname, $ctxselect
-            FROM {enrol} e
-            JOIN {course} c ON (c.id = e.customint1)
-            JOIN {context} ctx ON (ctx.instanceid = e.customint1)
-            WHERE e.courseid = :courseid AND e.enrol = :method AND ctx.contextlevel = :contextlevel ORDER BY e.sortorder";
-    $params = array('method' => 'meta', 'courseid' => $courseid, 'contextlevel' => CONTEXT_COURSE);
-
-    if ($results = $DB->get_records_sql($sql, $params)) {
-        $shortnames = array();
-        // Preload the context we will need it to format the category name shortly.
-        foreach ($results as $res) {
-            context_helper::preload_from_record($res);
-            $context = context_course::instance($res->id);
-            $shortnames[] = format_string($res->shortname, true, $context);
-        }
-        $total = count($shortnames);
-        $suffix = '';
-        if ($total > 10) {
-            $shortnames = array_slice($shortnames, 0, 10);
-            $diff = $total - count($shortnames);
-            if ($diff > 1) {
-                $suffix = get_string('shortnamesufixprural', 'block_tableau_bord', $diff);
-            } else {
-                $suffix = get_string('shortnamesufixsingular', 'block_tableau_bord', $diff);
-            }
-        }
-        $shortnames = get_string('shortnameprefix', 'block_tableau_bord', implode('; ', $shortnames));
-        $shortnames .= $suffix;
-    }
-
-    return isset($shortnames) ? $shortnames : false;
-}
-
-/**
- * Returns maximum number of courses which will be displayed in tableau_bord block
- *
- * @return int maximum number of courses
- */
-function block_tableau_bord_get_max_user_courses() {
-    // Get block configuration.
-    $config = get_config('block_tableau_bord');
-    $limit = $config->defaultmaxcourses;
-
-    // If max course is not set then try get user preference.
-    if (empty($config->forcedefaultmaxcourses)) {
-        $limit = get_user_preferences('tableau_bord_number_of_courses', $limit);
-    }
-    return $limit;
-}
-
-/**
  * Return sorted list of user courses
  *
  * @return array list of sorted courses and count of courses.
@@ -212,15 +135,3 @@ function block_tableau_bord_get_sorted_courses() {
     return array($sortedcourses, $sitecourses, count($courses));
 }
 
-// Permet a l'utilisateur de passer en mode edition des cours et ainsi d'activer le drag and drop.
-function mode_edition_cours() {
-    global $USER;
-    // Passe la variable qui indique que l'utilisateur est en cours de modification a vrai (sinon ca la cree).
-    $USER->userediting_course = true;
-}
-
-function quitter_edition_cours() {
-    global $USER;
-    // Passe la variable d'edition a faux.
-    $USER->userediting_course = false;
-}
