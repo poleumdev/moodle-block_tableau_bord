@@ -77,7 +77,7 @@ class block_tableau_bord extends block_base {
 
         // Load script Ajax.
         $this->page->requires->js('/blocks/tableau_bord/js/scriptajax.js');
-                
+
         if (!empty($config->showwelcomearea)) {
             require_once($CFG->dirroot.'/message/lib.php');
             $msgcount = message_count_unread_messages();
@@ -136,7 +136,8 @@ class block_tableau_bord extends block_base {
                         }
                     }
                 }
-                $this->content->text .= '<div class="d-flex flex-row-reverse"><a  class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php?editmode=on" ';
+                $this->content->text .= '<div class="d-flex flex-row-reverse"><a  class="btn btn-primary" href="'
+                                       .$CFG->wwwroot.'/my/index.php?editmode=on" ';
                 $this->content->text .= ' title="Ordonnancer mes cours">Modifier l\'ordre de mes cours</a></div>';
                 $this->content->text .= $renderer->tableau_bord($sortedcourses, $overviews, $lstonglet);
                 $this->content->text .= $renderer->hidden_courses($totalcourses - count($sortedcourses));

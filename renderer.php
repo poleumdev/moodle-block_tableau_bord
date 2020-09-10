@@ -46,10 +46,9 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      */
     public function tableau_bord($courses, $overviews, $arraydate) {
         global $CFG, $USER;
-        $html = '<script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/Chart.min.js'.'"></script>
-                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/tablist.min.js'.'"></script>
-                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/graphes.js'.'"></script>
-                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/xhr.js'.'"></script>';
+        $html = '<script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/Chart.min.js"></script>
+                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/js/tablist.min.js"></script>
+                 <script src="'.$CFG->wwwroot.'/blocks/tableau_bord/graphes.js"></script>';
 
         $courseordernumber = 0;
 
@@ -300,7 +299,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         return $output;
     }
 
-    public function afficher_avt_prof($course) {
+    protected function afficher_avt_prof($course) {
         $avancementglobal = "";
         $avancementdetaille = "";
         // Recuperation des donnees du cours (code de la page rapport d'activite).
@@ -434,7 +433,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
         return array($avancementglobal, $avancementdetaille);
     }
 
-    public function afficher_avt_etu($course) {
+    protected function afficher_avt_etu($course) {
         $avancementglobal = ""; // Contient le code html affichant l'avancement global.
         $avancementdetaille = ""; // Contient le code html affichant l'avancement detaille.
 
@@ -664,7 +663,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
      *     ainsi que leur bouton de suppression
      * Retourne une variable au format html
      */
-    public function afficher_notification($course, $overviews) {
+    protected function afficher_notification($course, $overviews) {
         global $USER, $DB, $CFG;
 
         $notifactivite = "";          // Contient toutes les notifications d'un type d'activite.
@@ -693,7 +692,7 @@ class block_tableau_bord_renderer extends plugin_renderer_base {
                                 ajax_delete_notif(true,['. $USER->id . ', coursemodule]);
                             }
                            </script>';
-                            
+
         // Pour chaque type d'activite du cours.
         foreach (array_keys($overviews[$course->id]) as $module) {
             $activiteaffichee = 0; // Nb activite qui sont affichees : au depart 0.
